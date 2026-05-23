@@ -1,6 +1,10 @@
 use crate::*;
-use alloy::sol_types::SolCall;
+use alloy::{
+    primitives::{Address, Bytes},
+    sol_types::SolCall,
+};
 use polars::prelude::*;
+use std::collections::HashMap;
 
 /// columns for transactions
 #[cryo_to_df::to_df(Datatype::Erc20Metadata)]
@@ -86,8 +90,64 @@ impl CollectByBlock for Erc20Metadata {
         store!(schema, columns, decimals, decimals);
         Ok(())
     }
+
+    async fn collect_by_block(
+        partition: Partition,
+        source: Arc<Source>,
+        query: Arc<Query>,
+        inner_request_size: Option<u64>,
+    ) -> R<HashMap<Datatype, DataFrame>> {
+        if query.multicall {
+            multicall_collect_by_block::<Self>(partition, source, query, inner_request_size).await
+        } else {
+            default_collect_by_block::<Self>(partition, source, query, inner_request_size).await
+        }
+    }
 }
 
 impl CollectByTransaction for Erc20Metadata {
     type Response = ();
+}
+
+impl MulticallBatchable for Erc20Metadata {
+    fn calls_for_row(params: &Params, require_success: bool) -> R<Vec<Multicall3::Call3>> {
+        let target = Address::from_slice(&params.address()?);
+        let allow_failure = !require_success;
+        Ok(vec![
+            Multicall3::Call3 {
+                target,
+                allowFailure: allow_failure,
+                callData: Bytes::from(ERC20::nameCall::SELECTOR.to_vec()),
+            },
+            Multicall3::Call3 {
+                target,
+                allowFailure: allow_failure,
+                callData: Bytes::from(ERC20::symbolCall::SELECTOR.to_vec()),
+            },
+            Multicall3::Call3 {
+                target,
+                allowFailure: allow_failure,
+                callData: Bytes::from(ERC20::decimalsCall::SELECTOR.to_vec()),
+            },
+        ])
+    }
+
+    fn decode_row(params: &Params, results: &[Multicall3::Result]) -> R<Self::Response> {
+        let name = if results[0].success {
+            decode_string_or_bytes32(&results[0].returnData)
+        } else {
+            None
+        };
+        let symbol = if results[1].success {
+            decode_string_or_bytes32(&results[1].returnData)
+        } else {
+            None
+        };
+        let decimals = if results[2].success && !results[2].returnData.is_empty() {
+            bytes_to_u32(alloy::primitives::Bytes::copy_from_slice(&results[2].returnData)).ok()
+        } else {
+            None
+        };
+        Ok((params.block_number()? as u32, params.address()?, name, symbol, decimals))
+    }
 }

@@ -75,7 +75,9 @@ pub use execution::{ExecutionEnv, ExecutionEnvBuilder};
 pub use signatures::*;
 
 pub use multicall::{
-    multicall3_deploy_block, Multicall3, DEFAULT_MULTICALL_BATCH_SIZE, MULTICALL3_ADDRESS,
+    decode_string_or_bytes32, default_collect_by_block, multicall3_info,
+    multicall_collect_by_block, Multicall3, Multicall3Info, MulticallBatchable,
+    DEFAULT_MULTICALL_BATCH_SIZE, MULTICALL3_ADDRESS,
 };
 
 /// decoders
