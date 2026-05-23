@@ -44,7 +44,7 @@ fn find_arg_aliases(args: &Args, schemas: &Schemas) -> Vec<(Dim, Dim)> {
         {
             if args.dim_is_none(dim) {
                 for (k, v) in aliases.iter() {
-                    if v == dim && args.dim_is_some(k) {
+                    if v == dim && args.dim_is_some(k) && !swaps.contains(&(*k, *v)) {
                         swaps.push((*k, *v));
                     }
                 }
