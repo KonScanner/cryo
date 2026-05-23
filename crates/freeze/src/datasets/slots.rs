@@ -14,7 +14,6 @@ pub struct Slots {
     chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for Slots {
     fn default_sort() -> Option<Vec<&'static str>> {
         Some(vec!["block_number", "address", "slot"])

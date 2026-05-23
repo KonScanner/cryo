@@ -23,7 +23,6 @@ pub struct Erc721Transfers {
     chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for Erc721Transfers {
     fn default_columns() -> Option<Vec<&'static str>> {
         Some(vec![

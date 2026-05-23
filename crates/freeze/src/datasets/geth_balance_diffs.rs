@@ -16,7 +16,6 @@ pub struct GethBalanceDiffs {
     pub(crate) chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for GethBalanceDiffs {}
 
 #[async_trait::async_trait]

@@ -16,7 +16,6 @@ pub struct CodeReads {
     pub(crate) chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for CodeReads {}
 
 type BlockTxsTraces = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<BTreeMap<Address, AccountState>>);

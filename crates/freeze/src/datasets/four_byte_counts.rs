@@ -16,7 +16,6 @@ pub struct FourByteCounts {
     pub(crate) chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for FourByteCounts {
     fn aliases() -> Vec<&'static str> {
         vec!["4byte_counts"]

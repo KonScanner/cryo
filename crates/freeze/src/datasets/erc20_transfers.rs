@@ -23,7 +23,6 @@ pub struct Erc20Transfers {
     chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for Erc20Transfers {
     fn default_columns() -> Option<Vec<&'static str>> {
         Some(vec![

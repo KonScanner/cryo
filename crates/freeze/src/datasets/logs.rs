@@ -26,7 +26,6 @@ pub struct Logs {
     chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for Logs {
     fn aliases() -> Vec<&'static str> {
         vec!["events"]

@@ -20,7 +20,6 @@ pub struct StorageDiffs {
     pub(crate) chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for StorageDiffs {
     fn aliases() -> Vec<&'static str> {
         vec!["slot_diffs"]

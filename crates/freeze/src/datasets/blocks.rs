@@ -33,7 +33,6 @@ pub struct Blocks {
     chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for Blocks {
     fn default_columns() -> Option<Vec<&'static str>> {
         Some(vec![

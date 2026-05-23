@@ -28,7 +28,6 @@ pub struct GethOpcodes {
     chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for GethOpcodes {
     fn default_columns() -> Option<Vec<&'static str>> {
         let f = |x: &&str| x != &"memory" && x != &"stack" && x != &"storage";

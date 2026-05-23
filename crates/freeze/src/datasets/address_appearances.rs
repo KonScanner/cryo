@@ -24,7 +24,6 @@ pub struct AddressAppearances {
     chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for AddressAppearances {
     fn default_columns() -> Option<Vec<&'static str>> {
         Some(vec![

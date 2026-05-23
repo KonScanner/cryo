@@ -29,10 +29,7 @@ use governor::{
     middleware::NoOpMiddleware,
     state::{direct::NotKeyed, InMemoryState},
 };
-use tokio::{
-    sync::{AcquireError, Semaphore, SemaphorePermit},
-    task,
-};
+use tokio::sync::{AcquireError, Semaphore, SemaphorePermit};
 
 use crate::CollectError;
 
@@ -75,35 +72,72 @@ impl Source {
         self.get_tx_receipts(block.transactions.clone()).await
     }
 
-    /// Returns all receipts for vector of transactions using `eth_getTransactionReceipt`
+    /// Returns all receipts for vector of transactions.
+    ///
+    /// Issues a single JSON-RPC batch with one `eth_getTransactionReceipt`
+    /// per transaction hash (see [`Self::get_transaction_receipts_batch`])
+    /// — one HTTP round-trip instead of N. Errors if any receipt is
+    /// missing (the per-call path used to error there too).
     pub async fn get_tx_receipts(
         &self,
         transactions: BlockTransactions<Transaction>,
     ) -> Result<Vec<TransactionReceipt>> {
-        let mut tasks = Vec::new();
-        for tx in transactions.as_transactions().unwrap() {
-            let tx_hash = *tx.inner.tx_hash();
-            let source = self.clone();
-            let task: task::JoinHandle<std::result::Result<TransactionReceipt, CollectError>> =
-                task::spawn(async move {
-                    match source.get_transaction_receipt(tx_hash).await? {
-                        Some(receipt) => Ok(receipt),
-                        None => {
-                            Err(CollectError::CollectError("could not find tx receipt".to_string()))
-                        }
-                    }
-                });
-            tasks.push(task);
-        }
-        let mut receipts = Vec::new();
-        for task in tasks {
-            match task.await {
-                Ok(receipt) => receipts.push(receipt?),
-                Err(e) => return Err(CollectError::TaskFailed(e)),
-            }
-        }
+        let hashes: Vec<TxHash> = transactions
+            .as_transactions()
+            .map(|txs| txs.iter().map(|tx| *tx.inner.tx_hash()).collect())
+            .unwrap_or_default();
+        let receipts = self.get_transaction_receipts_batch(hashes).await?;
+        receipts
+            .into_iter()
+            .map(|r| {
+                r.ok_or_else(|| CollectError::CollectError("could not find tx receipt".to_string()))
+            })
+            .collect()
+    }
 
-        Ok(receipts)
+    /// Fetch transaction receipts for many hashes in a single JSON-RPC batch.
+    ///
+    /// Sends one HTTP request carrying N embedded `eth_getTransactionReceipt`
+    /// calls and returns the parallel list of receipts. Compared to the
+    /// per-hash fan-out used previously (N `tokio::spawn`'d tasks, each a
+    /// separate HTTP call), this is one round-trip instead of N — the
+    /// structural win is largest when N is big (e.g. block.transactions.len()
+    /// on a busy mainnet block, often > 100).
+    ///
+    /// Acquires a single semaphore permit for the whole batch; callers
+    /// wanting stricter throttling should chunk the input and call this
+    /// once per chunk.
+    ///
+    /// # Errors
+    /// - Transport failure on the batch envelope itself.
+    /// - Individual missing receipts surface as `None` in the returned vector, not as errors —
+    ///   callers can map `None` to the semantics they want.
+    pub async fn get_transaction_receipts_batch(
+        &self,
+        hashes: Vec<TxHash>,
+    ) -> Result<Vec<Option<TransactionReceipt>>> {
+        if hashes.is_empty() {
+            return Ok(Vec::new())
+        }
+        let _permit = self.permit_request().await;
+        let mut batch = alloy::rpc::client::BatchRequest::new(self.provider.client());
+        let mut waiters: Vec<alloy::rpc::client::Waiter<Option<TransactionReceipt>>> =
+            Vec::with_capacity(hashes.len());
+        for h in &hashes {
+            let w = batch
+                .add_call("eth_getTransactionReceipt", &(*h,))
+                .map_err(|e| CollectError::CollectError(format!("batch add_call failed: {e:?}")))?;
+            waiters.push(w);
+        }
+        batch.await.map_err(|e| CollectError::CollectError(format!("batch send failed: {e:?}")))?;
+        let mut out = Vec::with_capacity(waiters.len());
+        for w in waiters {
+            let r = w
+                .await
+                .map_err(|e| CollectError::CollectError(format!("batch waiter failed: {e:?}")))?;
+            out.push(r);
+        }
+        Ok(out)
     }
 }
 

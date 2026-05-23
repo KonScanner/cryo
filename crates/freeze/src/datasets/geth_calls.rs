@@ -23,7 +23,6 @@ pub struct GethCalls {
     chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for GethCalls {}
 
 #[async_trait::async_trait]

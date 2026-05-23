@@ -35,7 +35,6 @@ pub struct Traces {
     chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for Traces {
     fn optional_parameters() -> Vec<Dim> {
         vec![Dim::FromAddress, Dim::ToAddress]

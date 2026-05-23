@@ -18,7 +18,6 @@ pub struct Erc20Balances {
     chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for Erc20Balances {
     fn default_blocks() -> Option<String> {
         Some("latest".to_string())

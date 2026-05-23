@@ -15,7 +15,6 @@ pub struct GethNonceDiffs {
     pub(crate) chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for GethNonceDiffs {}
 
 #[async_trait::async_trait]

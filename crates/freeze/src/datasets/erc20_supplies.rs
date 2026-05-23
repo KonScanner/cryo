@@ -17,7 +17,6 @@ pub struct Erc20Supplies {
     chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for Erc20Supplies {
     fn default_sort() -> Option<Vec<&'static str>> {
         Some(vec!["erc20", "block_number"])

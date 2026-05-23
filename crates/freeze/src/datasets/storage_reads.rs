@@ -17,7 +17,6 @@ pub struct StorageReads {
     pub(crate) chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for StorageReads {
     fn aliases() -> Vec<&'static str> {
         vec!["slot_reads"]

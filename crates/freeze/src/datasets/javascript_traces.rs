@@ -13,7 +13,6 @@ pub struct JavascriptTraces {
     pub(crate) chain_id: Vec<u64>,
 }
 
-#[async_trait::async_trait]
 impl Dataset for JavascriptTraces {
     fn aliases() -> Vec<&'static str> {
         vec!["js_traces"]
