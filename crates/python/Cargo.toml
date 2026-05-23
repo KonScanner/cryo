@@ -1,27 +1,36 @@
+# cryo_python is a standalone crate (not a member of the parent cryo
+# workspace) because pyo3-polars enables `polars-error/python`, which under
+# Cargo's workspace-level feature unification would enable pyo3's
+# `extension-module` feature for every other crate too and break the
+# standalone `cryo` binary's link. See the top-level Cargo.toml comment for
+# the full explanation.
 [package]
 name = "cryo_python"
 build = "build.rs"
 description = "cryo python is a python library built on top of the rust cryo library"
-version.workspace = true
-edition.workspace = true
-license.workspace = true
-homepage.workspace = true
-repository.workspace = true
+version = "0.3.2"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+homepage = "https://github.com/paradigmxyz/cryo"
+repository = "https://github.com/paradigmxyz/cryo"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+# Empty workspace block makes this a self-contained workspace so it can be
+# built from its own directory without inheriting the parent.
+
 [lib]
 name = "cryo"
 path = "rust/lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-cryo_cli = { workspace = true }
-cryo_freeze = { workspace = true }
-polars = { workspace = true }
-pyo3 = { workspace = true }
-pyo3-asyncio = { workspace = true }
-pyo3-polars = { workspace = true }
-tokio = { workspace = true }
+cryo_cli            = { version = "0.3.2", path = "../cli" }
+cryo_freeze         = { version = "0.3.2", path = "../freeze" }
+polars              = { version = "0.53", features = ["parquet", "string_encoding", "lazy", "binary_encoding", "json", "dtype-struct"] }
+pyo3                = { version = "0.27", features = ["extension-module"] }
+pyo3-async-runtimes = { version = "0.27", features = ["tokio-runtime"] }
+pyo3-polars         = "0.26"
+tokio               = { version = "1.33", features = ["macros", "rt-multi-thread", "sync"] }
 
 [build-dependencies]
-pyo3-build-config = { workspace = true }
+pyo3-build-config = "0.27"

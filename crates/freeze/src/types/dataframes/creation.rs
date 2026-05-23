@@ -3,7 +3,7 @@
 macro_rules! with_series {
     ($all_series:expr, $name:expr, $value:expr, $schema:expr) => {
         if $schema.has_column($name) {
-            $all_series.push(Series::new($name, $value));
+            $all_series.push(Series::new($name.into(), $value));
         }
     };
 }
@@ -14,9 +14,9 @@ macro_rules! with_series_binary {
     ($all_series:expr, $name:expr, $value:expr, $schema:expr) => {
         if $schema.has_column($name) {
             if let Some(ColumnType::Hex) = $schema.column_type($name) {
-                $all_series.push(Series::new($name, $value.to_vec_hex()));
+                $all_series.push(Series::new($name.into(), $value.to_vec_hex()));
             } else {
-                $all_series.push(Series::new($name, $value));
+                $all_series.push(Series::new($name.into(), $value));
             }
         }
     };
@@ -34,9 +34,9 @@ macro_rules! with_series_u256 {
 
                 let converted: Vec<Vec<u8>> = $value.iter().map(|v| v.to_vec_u8()).collect();
                 if ColumnEncoding::Hex == $schema.binary_type {
-                    $all_series.push(Series::new(name, converted.to_vec_hex()));
+                    $all_series.push(Series::new(name.into(), converted.to_vec_hex()));
                 } else {
-                    $all_series.push(Series::new(name, converted));
+                    $all_series.push(Series::new(name.into(), converted));
                 }
             }
 
@@ -46,7 +46,7 @@ macro_rules! with_series_u256 {
                 let name = name.as_str();
 
                 let converted: Vec<String> = $value.iter().map(|v| v.to_string()).collect();
-                $all_series.push(Series::new(name, converted));
+                $all_series.push(Series::new(name.into(), converted));
             }
 
             // float32
@@ -56,7 +56,7 @@ macro_rules! with_series_u256 {
 
                 let converted: Vec<Option<f32>> =
                     $value.iter().map(|v| v.to_string().parse::<f32>().ok()).collect();
-                $all_series.push(Series::new(name, converted));
+                $all_series.push(Series::new(name.into(), converted));
             }
 
             // float64
@@ -66,7 +66,7 @@ macro_rules! with_series_u256 {
 
                 let converted: Vec<Option<f64>> =
                     $value.iter().map(|v| v.to_string().parse::<f64>().ok()).collect();
-                $all_series.push(Series::new(name, converted));
+                $all_series.push(Series::new(name.into(), converted));
             }
 
             // u32
@@ -75,7 +75,7 @@ macro_rules! with_series_u256 {
                 let name = name.as_str();
 
                 let converted: Vec<u32> = $value.iter().map(|v| v.wrapping_to::<u32>()).collect();
-                $all_series.push(Series::new(name, converted));
+                $all_series.push(Series::new(name.into(), converted));
             }
 
             // u64
@@ -84,7 +84,7 @@ macro_rules! with_series_u256 {
                 let name = name.as_str();
 
                 let converted: Vec<u64> = $value.iter().map(|v| v.wrapping_to::<u64>()).collect();
-                $all_series.push(Series::new(name, converted));
+                $all_series.push(Series::new(name.into(), converted));
             }
 
             // decimal128
@@ -108,9 +108,9 @@ macro_rules! with_series_option_u256 {
                 let converted: Vec<Option<Vec<u8>>> =
                     $value.iter().map(|v| v.map(|x| x.to_vec_u8())).collect();
                 if ColumnEncoding::Hex == $schema.binary_type {
-                    $all_series.push(Series::new(name, converted.to_vec_hex()));
+                    $all_series.push(Series::new(name.into(), converted.to_vec_hex()));
                 } else {
-                    $all_series.push(Series::new(name, converted));
+                    $all_series.push(Series::new(name.into(), converted));
                 }
             }
 
@@ -121,7 +121,7 @@ macro_rules! with_series_option_u256 {
 
                 let converted: Vec<Option<String>> =
                     $value.iter().map(|v| v.map(|x| x.to_string())).collect();
-                $all_series.push(Series::new(name, converted));
+                $all_series.push(Series::new(name.into(), converted));
             }
 
             // float32
@@ -133,7 +133,7 @@ macro_rules! with_series_option_u256 {
                     .iter()
                     .map(|v| v.map(|x| x.to_string().parse::<f32>().ok()).flatten())
                     .collect();
-                $all_series.push(Series::new(name, converted));
+                $all_series.push(Series::new(name.into(), converted));
             }
 
             // float64
@@ -145,7 +145,7 @@ macro_rules! with_series_option_u256 {
                     .iter()
                     .map(|v| v.map(|x| x.to_string().parse::<f64>().ok()).flatten())
                     .collect();
-                $all_series.push(Series::new(name, converted));
+                $all_series.push(Series::new(name.into(), converted));
             }
 
             // u32
@@ -155,7 +155,7 @@ macro_rules! with_series_option_u256 {
 
                 let converted: Vec<Option<u32>> =
                     $value.iter().map(|v| v.map(|x| x.wrapping_to::<u32>())).collect();
-                $all_series.push(Series::new(name, converted));
+                $all_series.push(Series::new(name.into(), converted));
             }
 
             // u64
@@ -165,7 +165,7 @@ macro_rules! with_series_option_u256 {
 
                 let converted: Vec<Option<u64>> =
                     $value.iter().map(|v| v.map(|x| x.wrapping_to::<u64>())).collect();
-                $all_series.push(Series::new(name, converted));
+                $all_series.push(Series::new(name.into(), converted));
             }
 
             // decimal128

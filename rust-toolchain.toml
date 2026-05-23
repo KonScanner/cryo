@@ -1,0 +1,6 @@
+# Pin the toolchain for any rustup-aware `cargo` invocation in this tree
+# (e.g. cargo, maturin, build.rs). Crates depending on us need recent rustc
+# for MSRV bumps in polars 0.53 + ruint 1.18 + simd-json 0.17 + icu_*.
+[toolchain]
+channel    = "stable"
+components = ["rustc", "cargo", "rustfmt", "clippy"]

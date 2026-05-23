@@ -1,6 +1,7 @@
 use crate::args::Args;
 use cryo_freeze::{FileFormat, FileOutput, ParseError, Source, SubDir};
 use polars::prelude::*;
+use polars_parquet::write::{BrotliLevel, GzipLevel, ZstdLevel};
 use std::fs;
 
 pub(crate) fn parse_file_output(args: &Args, source: &Source) -> Result<FileOutput, ParseError> {
@@ -103,7 +104,10 @@ fn parse_compression(input: &Vec<String>) -> Result<ParquetCompression, ParseErr
     match input.as_slice() {
         [algorithm] if algorithm.as_str() == "uncompressed" => Ok(ParquetCompression::Uncompressed),
         [algorithm] if algorithm.as_str() == "snappy" => Ok(ParquetCompression::Snappy),
-        [algorithm] if algorithm.as_str() == "lzo" => Ok(ParquetCompression::Lzo),
+        [algorithm] if algorithm.as_str() == "lzo" => Err(ParseError::ParseError(
+            "lzo compression was removed in polars 0.53; use lz4, zstd, gzip, brotli, or snappy"
+                .to_string(),
+        )),
         [algorithm] if algorithm.as_str() == "lz4" => Ok(ParquetCompression::Lz4Raw),
         [algorithm, level_str] if algorithm.as_str() == "gzip" => match level_str.parse::<u8>() {
             Ok(level) => match GzipLevel::try_new(level) {

@@ -4,6 +4,10 @@ build-backend = "maturin"
 
 [project]
 name = "cryo"
+# Version is pulled from Cargo.toml by maturin. PEP 621 requires either
+# `version` or `dynamic = ["version"]`; the latter keeps the source of truth
+# in one place (Cargo.toml).
+dynamic = ["version"]
 description = "cryo is the easiest way to extract blockchain data to parquet, csv, json, or a python dataframe."
 requires-python = ">=3.7"
 classifiers = [
