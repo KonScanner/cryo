@@ -20,6 +20,26 @@ pub struct Query {
     pub js_tracer: Option<String>,
     /// Labels (these are non-functional)
     pub labels: QueryLabels,
+    /// Batch `eth_call` invocations through Multicall3 (currently only `eth_calls`).
+    ///
+    /// When false, each call is dispatched as an individual `eth_call`. When
+    /// true, calls sharing a block are aggregated through Multicall3 in chunks
+    /// of [`multicall_batch_size`](Self::multicall_batch_size), with a halving
+    /// fallback on RPC error and a per-call fallback at blocks earlier than the
+    /// Multicall3 deploy block on the active chain.
+    pub multicall: bool,
+    /// Maximum number of inner calls per Multicall3 batch.
+    ///
+    /// Only meaningful when [`multicall`](Self::multicall) is true. Defaults to
+    /// [`DEFAULT_MULTICALL_BATCH_SIZE`](crate::DEFAULT_MULTICALL_BATCH_SIZE)
+    /// when constructed via the CLI / Python bindings.
+    pub multicall_batch_size: u32,
+    /// When true, mark the entire Multicall3 batch as failed if any inner call reverts.
+    ///
+    /// When false (the default), inner reverts are returned as `None` in
+    /// `output_data` — matching the existing per-call behaviour of
+    /// `Source::call().await.ok()`.
+    pub multicall_require_success: bool,
 }
 
 /// query labels (non-functional)

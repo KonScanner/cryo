@@ -25,6 +25,9 @@ pub async fn parse_query(args: &Args, source: Arc<Source>) -> Result<Query, Pars
         exclude_failed: args.exclude_failed,
         js_tracer: args.js_tracer.clone(),
         labels,
+        multicall: args.multicall,
+        multicall_batch_size: args.multicall_batch_size,
+        multicall_require_success: args.multicall_require_success,
     })
 }
 

@@ -38,6 +38,9 @@ pub mod dataframes;
 #[allow(missing_docs)]
 pub mod signatures;
 
+/// Multicall3 helpers
+pub mod multicall;
+
 /// error specifications
 pub mod errors;
 /// type specifications for output data formats
@@ -70,6 +73,10 @@ pub use collection::*;
 pub use execution::{ExecutionEnv, ExecutionEnvBuilder};
 
 pub use signatures::*;
+
+pub use multicall::{
+    multicall3_deploy_block, Multicall3, DEFAULT_MULTICALL_BATCH_SIZE, MULTICALL3_ADDRESS,
+};
 
 /// decoders
 pub mod decoders;

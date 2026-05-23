@@ -264,6 +264,24 @@ pub struct Args {
     /// Event signature for log decoding
     #[arg(long, value_name = "tracer", help_heading = "Dataset-specific Options")]
     pub js_tracer: Option<String>,
+
+    /// Batch eth_calls through Multicall3 (currently only the `eth_calls` dataset)
+    #[arg(long, help_heading = "Dataset-specific Options")]
+    pub multicall: bool,
+
+    /// Max inner calls per Multicall3 batch (only used with --multicall)
+    #[arg(
+        long,
+        value_name = "N",
+        default_value_t = 150,
+        help_heading = "Dataset-specific Options"
+    )]
+    pub multicall_batch_size: u32,
+
+    /// Mark the whole batch as failed if any inner call reverts (default: per-call failures return
+    /// null)
+    #[arg(long, help_heading = "Dataset-specific Options")]
+    pub multicall_require_success: bool,
 }
 
 impl Args {

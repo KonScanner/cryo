@@ -65,6 +65,9 @@ use cryo_freeze::collect;
         verbose = false,
         no_verbose = false,
         event_signature = None,
+        multicall = false,
+        multicall_batch_size = 150,
+        multicall_require_success = false,
     )
 )]
 #[allow(clippy::too_many_arguments)]
@@ -127,6 +130,9 @@ pub fn _collect(
     verbose: bool,
     no_verbose: bool,
     event_signature: Option<String>,
+    multicall: bool,
+    multicall_batch_size: u32,
+    multicall_require_success: bool,
 ) -> PyResult<Bound<'_, PyAny>> {
     if let Some(command) = command {
         pyo3_async_runtimes::tokio::future_into_py(py, async move {
@@ -193,6 +199,9 @@ pub fn _collect(
             verbose,
             no_verbose,
             event_signature,
+            multicall,
+            multicall_batch_size,
+            multicall_require_success,
         };
         pyo3_async_runtimes::tokio::future_into_py(py, async move {
             match run_collect(args).await {
