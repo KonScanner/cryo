@@ -1,4 +1,9 @@
-use pyo3::{exceptions::PyTypeError, prelude::*, types::IntoPyDict, IntoPyObjectExt};
+use pyo3::{
+    exceptions::{PyRuntimeError, PyTypeError},
+    prelude::*,
+    types::IntoPyDict,
+    IntoPyObjectExt,
+};
 
 use cryo_cli::{run, Args};
 
@@ -208,7 +213,7 @@ pub fn _freeze(
                     Ok::<PyObject, PyErr>(dict.into_any().unbind())
                 }),
                 Ok(None) => Ok(Python::with_gil(|py| py.None())),
-                _ => Err(PyErr::new::<PyTypeError, _>("failed")),
+                Err(e) => Err(PyErr::new::<PyRuntimeError, _>(format!("{e:?}"))),
             }
         })
     } else {
@@ -230,7 +235,7 @@ fn freeze_command(py: Python<'_>, command: String) -> PyResult<Bound<'_, PyAny>>
                 Ok::<PyObject, PyErr>(dict.into_any().unbind())
             }),
             Ok(None) => Ok(Python::with_gil(|py| py.None())),
-            _ => Err(PyErr::new::<PyTypeError, _>("failed")),
+            Err(e) => Err(PyErr::new::<PyRuntimeError, _>(format!("{e:?}"))),
         }
     })
 }

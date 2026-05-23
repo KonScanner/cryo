@@ -244,19 +244,19 @@ async fn multicall_batch(
         .call2(MULTICALL3_ADDRESS, call_data, block)
         .await
         .map_err(|e| CollectError::CollectError(format!("multicall RPC failed: {e:?}")))?;
-    let decoded = Multicall3::aggregate3Call::abi_decode_returns(&raw, true)
+    let decoded = Multicall3::aggregate3Call::abi_decode_returns(&raw)
         .map_err(|e| CollectError::CollectError(format!("multicall decode failed: {e:?}")))?;
 
-    if decoded.returnData.len() != batch.len() {
+    if decoded.len() != batch.len() {
         return Err(CollectError::CollectError(format!(
             "multicall returned {} results for a {} call batch",
-            decoded.returnData.len(),
+            decoded.len(),
             batch.len()
         )))
     }
 
     let mut out = Vec::with_capacity(batch.len());
-    for (p, result) in batch.iter().zip(decoded.returnData) {
+    for (p, result) in batch.iter().zip(decoded) {
         let output_data = if result.success { Some(result.returnData.to_vec()) } else { None };
         out.push((p.block_number()? as u32, p.contract()?, p.call_data()?, output_data));
     }

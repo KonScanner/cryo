@@ -4,7 +4,7 @@ use crate::args::Args;
 use alloy::{
     providers::{Provider, ProviderBuilder, RootProvider},
     rpc::client::{BuiltInConnectionString, ClientBuilder, RpcClient},
-    transports::{layers::RetryBackoffLayer, BoxTransport},
+    transports::layers::RetryBackoffLayer,
 };
 use cryo_freeze::{ParseError, Source, SourceLabels};
 use governor::{Quota, RateLimiter};
@@ -20,13 +20,12 @@ pub(crate) async fn parse_source(args: &Args) -> Result<Source, ParseError> {
         args.compute_units_per_second,
     );
     let connect: BuiltInConnectionString = rpc_url.parse().map_err(ParseError::ProviderError)?;
-    let client: RpcClient<BoxTransport> = ClientBuilder::default()
+    let client: RpcClient = ClientBuilder::default()
         .layer(retry_layer)
-        .connect_boxed(connect)
+        .connect_with(connect)
         .await
-        .map_err(ParseError::ProviderError)?
-        .boxed();
-    let provider: RootProvider<BoxTransport> = ProviderBuilder::default().on_client(client);
+        .map_err(ParseError::ProviderError)?;
+    let provider: RootProvider = ProviderBuilder::default().connect_client(client);
     let chain_id = provider.get_chain_id().await.map_err(ParseError::ProviderError)?;
     let rate_limiter = match args.requests_per_second {
         Some(rate_limit) => match (NonZeroU32::new(1), NonZeroU32::new(rate_limit)) {

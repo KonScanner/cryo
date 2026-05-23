@@ -289,7 +289,7 @@ fn print_chunks(chunks: &[Partition], align: Option<bool>, reorg_buffer: Option<
     }
 
     // NOTE: this branch is not exhaustive
-    for (dim, dim_stats) in vec![
+    for (dim, dim_stats) in [
         (Dim::TransactionHash, stats.transactions),
         (Dim::CallData, stats.call_datas),
         (Dim::Address, stats.addresses),

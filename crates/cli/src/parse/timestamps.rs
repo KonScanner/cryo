@@ -24,7 +24,7 @@ pub(crate) async fn parse_timestamps(
         for path in files {
             let column = if path.contains(':') {
                 path.split(':')
-                    .last()
+                    .next_back()
                     .ok_or(ParseError::ParseError("could not parse txs path column".to_string()))?
             } else {
                 "timestamp"
@@ -327,7 +327,7 @@ mod tests {
     use alloy::{
         providers::ProviderBuilder,
         rpc::client::{BuiltInConnectionString, ClientBuilder, RpcClient},
-        transports::{layers::RetryBackoffLayer, BoxTransport},
+        transports::layers::RetryBackoffLayer,
     };
     use governor::{Quota, RateLimiter};
 
@@ -347,14 +347,13 @@ mod tests {
             RetryBackoffLayer::new(max_retry, initial_backoff, compute_units_per_second);
         let connect: BuiltInConnectionString =
             rpc_url.parse().map_err(ParseError::ProviderError).unwrap();
-        let client: RpcClient<BoxTransport> = ClientBuilder::default()
+        let client: RpcClient = ClientBuilder::default()
             .layer(retry_layer)
-            .connect_boxed(connect)
+            .connect_with(connect)
             .await
             .map_err(ParseError::ProviderError)
-            .unwrap()
-            .boxed();
-        let provider = ProviderBuilder::default().on_client(client);
+            .unwrap();
+        let provider = ProviderBuilder::default().connect_client(client);
         let quota = Quota::per_second(NonZeroU32::new(15).unwrap())
             .allow_burst(NonZeroU32::new(1).unwrap());
         let rate_limiter = Some(RateLimiter::direct(quota));

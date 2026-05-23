@@ -20,7 +20,7 @@ pub(crate) async fn parse_blocks(
         for path in files {
             let column = if path.contains(':') {
                 path.split(':')
-                    .last()
+                    .next_back()
                     .ok_or(ParseError::ParseError("could not parse txs path column".to_string()))?
             } else {
                 "block_number"
@@ -412,7 +412,7 @@ mod tests {
         mock_ipc_path: PathBuf,
     ) {
         let ipc = IpcConnect::new(mock_ipc_path);
-        let provider = ProviderBuilder::new().on_ipc(ipc).await.unwrap().boxed();
+        let provider = ProviderBuilder::default().connect_ipc(ipc).await.unwrap();
         let source = Source {
             provider,
             semaphore: Arc::new(None),
@@ -478,7 +478,7 @@ mod tests {
         mock_ipc_path: PathBuf,
     ) {
         let ipc = IpcConnect::new(mock_ipc_path);
-        let provider = ProviderBuilder::new().on_ipc(ipc).await.unwrap().boxed();
+        let provider = ProviderBuilder::default().connect_ipc(ipc).await.unwrap();
         let source = Arc::new(Source {
             provider,
             chain_id: 1,
@@ -555,7 +555,7 @@ mod tests {
         mock_ipc_path: PathBuf,
     ) {
         let provider =
-            ProviderBuilder::new().on_ipc(IpcConnect::new(mock_ipc_path)).await.unwrap().boxed();
+            ProviderBuilder::default().connect_ipc(IpcConnect::new(mock_ipc_path)).await.unwrap();
         let source = Source {
             provider,
             semaphore: Arc::new(None),
