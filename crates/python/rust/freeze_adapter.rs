@@ -203,16 +203,16 @@ pub fn _freeze(
 
         pyo3_async_runtimes::tokio::future_into_py(py, async move {
             match run(args).await {
-                Ok(Some(result)) => Python::with_gil(|py| {
+                Ok(Some(result)) => Python::attach(|py| {
                     let dict = [
                         ("n_completed", result.completed.len().into_py_any(py)?),
                         ("n_skipped", result.skipped.len().into_py_any(py)?),
                         ("n_errored", result.errored.len().into_py_any(py)?),
                     ]
                     .into_py_dict(py)?;
-                    Ok::<PyObject, PyErr>(dict.into_any().unbind())
+                    Ok::<Py<PyAny>, PyErr>(dict.into_any().unbind())
                 }),
-                Ok(None) => Ok(Python::with_gil(|py| py.None())),
+                Ok(None) => Ok(Python::attach(|py| py.None())),
                 Err(e) => Err(PyErr::new::<PyRuntimeError, _>(format!("{e:?}"))),
             }
         })
@@ -225,16 +225,16 @@ fn freeze_command(py: Python<'_>, command: String) -> PyResult<Bound<'_, PyAny>>
     pyo3_async_runtimes::tokio::future_into_py(py, async move {
         let args = cryo_cli::parse_str(command.as_str()).await.expect("could not parse inputs");
         match run(args).await {
-            Ok(Some(result)) => Python::with_gil(|py| {
+            Ok(Some(result)) => Python::attach(|py| {
                 let dict = [
                     ("n_completed", result.completed.len().into_py_any(py)?),
                     ("n_skipped", result.skipped.len().into_py_any(py)?),
                     ("n_errored", result.errored.len().into_py_any(py)?),
                 ]
                 .into_py_dict(py)?;
-                Ok::<PyObject, PyErr>(dict.into_any().unbind())
+                Ok::<Py<PyAny>, PyErr>(dict.into_any().unbind())
             }),
-            Ok(None) => Ok(Python::with_gil(|py| py.None())),
+            Ok(None) => Ok(Python::attach(|py| py.None())),
             Err(e) => Err(PyErr::new::<PyRuntimeError, _>(format!("{e:?}"))),
         }
     })
