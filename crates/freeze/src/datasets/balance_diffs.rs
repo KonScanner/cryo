@@ -23,7 +23,6 @@ impl Dataset for BalanceDiffs {}
 
 type BlockTxsTraces = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<TraceResults>);
 
-#[async_trait::async_trait]
 impl CollectByBlock for BalanceDiffs {
     type Response = BlockTxsTraces;
 
@@ -42,7 +41,6 @@ impl CollectByBlock for BalanceDiffs {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for BalanceDiffs {
     type Response = BlockTxsTraces;
 

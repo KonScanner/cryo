@@ -48,7 +48,6 @@ impl Dataset for Blocks {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for Blocks {
     type Response = Block;
 
@@ -66,7 +65,6 @@ impl CollectByBlock for Blocks {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for Blocks {
     type Response = Block;
 

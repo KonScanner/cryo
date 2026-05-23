@@ -47,12 +47,18 @@ impl Dataset for Erc721Transfers {
         true
     }
 
+    fn default_inner_request_size() -> u64 {
+        // Log fetch is one HTTP request per block range; pulling 50 blocks per
+        // request is a safe default for ERC-20 Transfer-shaped filters on a
+        // single contract. Users can override with --inner-request-size.
+        50
+    }
+
     fn arg_aliases() -> Option<std::collections::HashMap<Dim, Dim>> {
         Some([(Dim::Contract, Dim::Address)].into_iter().collect())
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for Erc721Transfers {
     type Response = Vec<Log>;
 
@@ -79,7 +85,6 @@ impl CollectByBlock for Erc721Transfers {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for Erc721Transfers {
     type Response = Vec<Log>;
 

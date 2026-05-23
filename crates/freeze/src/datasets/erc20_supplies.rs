@@ -35,7 +35,6 @@ impl Dataset for Erc20Supplies {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for Erc20Supplies {
     type Response = (u32, Vec<u8>, Option<U256>);
 

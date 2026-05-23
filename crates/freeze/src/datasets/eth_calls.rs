@@ -44,7 +44,6 @@ impl Dataset for EthCalls {
 
 type EthCallsResponse = (u32, Vec<u8>, Vec<u8>, Option<Vec<u8>>);
 
-#[async_trait::async_trait]
 impl CollectByBlock for EthCalls {
     type Response = EthCallsResponse;
 

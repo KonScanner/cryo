@@ -42,7 +42,6 @@ pub(crate) fn remove_control_characters(s: &str) -> String {
     re.replace_all(s, "").to_string()
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for Erc20Metadata {
     type Response = (u32, Vec<u8>, Option<String>, Option<String>, Option<u32>);
 

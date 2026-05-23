@@ -18,7 +18,6 @@ pub struct GethStorageDiffs {
 
 impl Dataset for GethStorageDiffs {}
 
-#[async_trait::async_trait]
 impl CollectByBlock for GethStorageDiffs {
     type Response = <GethStateDiffs as CollectByBlock>::Response;
 
@@ -32,7 +31,6 @@ impl CollectByBlock for GethStorageDiffs {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for GethStorageDiffs {
     type Response = <GethStateDiffs as CollectByTransaction>::Response;
 

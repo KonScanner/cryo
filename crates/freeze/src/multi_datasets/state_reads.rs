@@ -38,7 +38,6 @@ impl ToDataFrames for StateReads {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for StateReads {
     type Response = BlockTxsTraces;
 
@@ -63,7 +62,6 @@ impl CollectByBlock for StateReads {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for StateReads {
     type Response = BlockTxsTraces;
 

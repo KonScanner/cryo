@@ -23,7 +23,6 @@ impl Dataset for BalanceReads {}
 
 type BlockTxsTraces = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<BTreeMap<Address, AccountState>>);
 
-#[async_trait::async_trait]
 impl CollectByBlock for BalanceReads {
     type Response = BlockTxsTraces;
 
@@ -39,7 +38,6 @@ impl CollectByBlock for BalanceReads {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for BalanceReads {
     type Response = BlockTxsTraces;
 

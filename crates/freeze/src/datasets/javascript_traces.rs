@@ -21,7 +21,6 @@ impl Dataset for JavascriptTraces {
 
 type BlockTxsTraces = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<serde_json::Value>);
 
-#[async_trait::async_trait]
 impl CollectByBlock for JavascriptTraces {
     type Response = BlockTxsTraces;
 
@@ -44,7 +43,6 @@ impl CollectByBlock for JavascriptTraces {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for JavascriptTraces {
     type Response = BlockTxsTraces;
 

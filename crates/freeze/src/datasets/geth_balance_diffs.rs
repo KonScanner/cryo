@@ -18,7 +18,6 @@ pub struct GethBalanceDiffs {
 
 impl Dataset for GethBalanceDiffs {}
 
-#[async_trait::async_trait]
 impl CollectByBlock for GethBalanceDiffs {
     type Response = <GethStateDiffs as CollectByBlock>::Response;
 
@@ -32,7 +31,6 @@ impl CollectByBlock for GethBalanceDiffs {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for GethBalanceDiffs {
     type Response = <GethStateDiffs as CollectByTransaction>::Response;
 

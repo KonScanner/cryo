@@ -30,7 +30,6 @@ impl ToDataFrames for StateDiffs {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for StateDiffs {
     type Response = BlockTxsTraces;
 
@@ -47,7 +46,6 @@ impl CollectByBlock for StateDiffs {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for StateDiffs {
     type Response = BlockTxsTraces;
 

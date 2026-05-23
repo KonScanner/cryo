@@ -29,7 +29,6 @@ impl Dataset for Balances {
 
 type BlockTxAddressOutput = (u32, Option<Vec<u8>>, Vec<u8>, U256);
 
-#[async_trait::async_trait]
 impl CollectByBlock for Balances {
     type Response = BlockTxAddressOutput;
 
@@ -47,7 +46,6 @@ impl CollectByBlock for Balances {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for Balances {
     type Response = ();
 }

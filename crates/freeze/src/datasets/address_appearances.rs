@@ -43,7 +43,6 @@ impl Dataset for AddressAppearances {
 
 type BlockLogsTraces = (Block, Vec<Log>, Vec<LocalizedTransactionTrace>);
 
-#[async_trait::async_trait]
 impl CollectByBlock for AddressAppearances {
     type Response = BlockLogsTraces;
 
@@ -70,7 +69,6 @@ impl CollectByBlock for AddressAppearances {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for AddressAppearances {
     type Response = BlockLogsTraces;
 

@@ -1919,7 +1919,6 @@ name = "cryo_freeze"
 version = "0.3.2"
 dependencies = [
  "alloy",
- "async-trait",
  "chrono",
  "colored",
  "cryo_to_df",

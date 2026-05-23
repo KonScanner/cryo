@@ -33,7 +33,6 @@ impl Dataset for Contracts {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for Contracts {
     type Response = Vec<LocalizedTransactionTrace>;
 
@@ -48,7 +47,6 @@ impl CollectByBlock for Contracts {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for Contracts {
     type Response = Vec<LocalizedTransactionTrace>;
 

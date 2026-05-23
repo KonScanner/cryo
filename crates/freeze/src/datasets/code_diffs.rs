@@ -23,7 +23,6 @@ impl Dataset for CodeDiffs {}
 
 type BlockTxTraces = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<TraceResults>);
 
-#[async_trait::async_trait]
 impl CollectByBlock for CodeDiffs {
     type Response = BlockTxTraces;
 
@@ -41,7 +40,6 @@ impl CollectByBlock for CodeDiffs {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for CodeDiffs {
     type Response = BlockTxTraces;
 

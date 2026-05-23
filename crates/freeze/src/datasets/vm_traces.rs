@@ -36,7 +36,6 @@ impl Dataset for VmTraces {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for VmTraces {
     type Response = (Option<u32>, Option<Vec<u8>>, Vec<TraceResults>);
 
@@ -52,7 +51,6 @@ impl CollectByBlock for VmTraces {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for VmTraces {
     type Response = (Option<u32>, Option<Vec<u8>>, Vec<TraceResults>);
 

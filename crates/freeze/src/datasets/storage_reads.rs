@@ -25,7 +25,6 @@ impl Dataset for StorageReads {
 
 type BlockTxsTraces = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<BTreeMap<Address, AccountState>>);
 
-#[async_trait::async_trait]
 impl CollectByBlock for StorageReads {
     type Response = BlockTxsTraces;
 
@@ -41,7 +40,6 @@ impl CollectByBlock for StorageReads {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for StorageReads {
     type Response = BlockTxsTraces;
 

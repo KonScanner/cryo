@@ -32,7 +32,6 @@ impl ToDataFrames for CallTraceDerivatives {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for CallTraceDerivatives {
     type Response = Vec<LocalizedTransactionTrace>;
 
@@ -47,7 +46,6 @@ impl CollectByBlock for CallTraceDerivatives {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for CallTraceDerivatives {
     type Response = Vec<LocalizedTransactionTrace>;
 

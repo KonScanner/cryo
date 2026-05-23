@@ -51,7 +51,6 @@ impl ToDataFrames for GethStateDiffs {
 
 type BlockTxsTraces = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<DiffMode>);
 
-#[async_trait::async_trait]
 impl CollectByBlock for GethStateDiffs {
     type Response = BlockTxsTraces;
 
@@ -75,7 +74,6 @@ impl CollectByBlock for GethStateDiffs {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for GethStateDiffs {
     type Response = BlockTxsTraces;
 

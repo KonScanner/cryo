@@ -69,6 +69,13 @@ macro_rules! define_datatypes {
                 }
             }
 
+            /// preferred default for `inner_request_size` (blocks per RPC request)
+            pub fn default_inner_request_size(&self) -> u64 {
+                match *self {
+                    $(Datatype::$datatype => $datatype::default_inner_request_size(),)*
+                }
+            }
+
             /// aliases of datatype
             pub fn arg_aliases(&self) -> HashMap<Dim, Dim> {
                 match *self {
@@ -106,63 +113,75 @@ macro_rules! define_datatypes {
         }
 
         /// collect by block
+        ///
+        /// Each arm awaits its own future inline. With native AFIT (after the
+        /// CollectByBlock #[async_trait] -> impl Future + Send migration),
+        /// `<TypeName>::collect_by_block(...)` returns a distinct opaque
+        /// future type per impl, so the previous `let task = match …; task.await`
+        /// form fails E0308 (`match` arms have incompatible types). Awaiting
+        /// inside each arm unifies them on the concrete result type.
         pub async fn collect_by_block(
             datatype: MetaDatatype,
             partition: Partition,
             source: Arc<Source>,
             query: Arc<Query>
         ) -> Result<HashMap<Datatype, DataFrame>, CollectError> {
-            let task = match datatype {
+            match datatype {
                 MetaDatatype::Scalar(datatype) => {
                     let inner_request_size = if datatype.use_block_ranges() {
-                        Some(source.inner_request_size)
+                        // User's explicit `--inner-request-size` wins iff it's
+                        // larger than the dataset's preference. When the user
+                        // leaves the default (cryo CLI's `1`), the dataset's
+                        // preference kicks in for log-shaped datasets.
+                        Some(source.inner_request_size.max(datatype.default_inner_request_size()))
                     } else {
                         None
                     };
                     match datatype {
                     $(
-                        Datatype::$datatype => $datatype::collect_by_block(partition, source, query, inner_request_size),
+                        Datatype::$datatype => $datatype::collect_by_block(partition, source, query, inner_request_size).await,
                     )*
                     }
                 },
                 MetaDatatype::Multi(datatype) => match datatype {
                     MultiDatatype::BlocksAndTransactions => {
-                        BlocksAndTransactions::collect_by_block(partition, source, query, None)
+                        BlocksAndTransactions::collect_by_block(partition, source, query, None).await
                     }
                     MultiDatatype::CallTraceDerivatives => {
-                        CallTraceDerivatives::collect_by_block(partition, source, query, None)
+                        CallTraceDerivatives::collect_by_block(partition, source, query, None).await
                     }
                     MultiDatatype::GethStateDiffs => {
-                        GethStateDiffs::collect_by_block(partition, source, query, None)
+                        GethStateDiffs::collect_by_block(partition, source, query, None).await
                     },
                     MultiDatatype::StateDiffs => {
-                        StateDiffs::collect_by_block(partition, source, query, None)
+                        StateDiffs::collect_by_block(partition, source, query, None).await
                     },
                     MultiDatatype::StateReads => {
-                        StateReads::collect_by_block(partition, source, query, None)
+                        StateReads::collect_by_block(partition, source, query, None).await
                     },
                 },
-            };
-            task.await
+            }
         }
 
         /// collect by transaction
+        ///
+        /// See `collect_by_block` above for the rationale on `.await` per-arm.
         pub async fn collect_by_transaction(
             datatype: MetaDatatype,
             partition: Partition,
             source: Arc<Source>,
             query: Arc<Query>,
         ) -> Result<HashMap<Datatype, DataFrame>, CollectError> {
-            let task = match datatype {
+            match datatype {
                 MetaDatatype::Scalar(datatype) => {
                     let inner_request_size = if datatype.use_block_ranges() {
-                        Some(source.inner_request_size)
+                        Some(source.inner_request_size.max(datatype.default_inner_request_size()))
                     } else {
                         None
                     };
                     match datatype {
                     $(
-                        Datatype::$datatype => $datatype::collect_by_transaction(partition, source, query, inner_request_size),
+                        Datatype::$datatype => $datatype::collect_by_transaction(partition, source, query, inner_request_size).await,
                     )*
                     }
                 },
@@ -170,24 +189,23 @@ macro_rules! define_datatypes {
                     let inner_request_size = None;
                     match datatype {
                         MultiDatatype::BlocksAndTransactions => {
-                            BlocksAndTransactions::collect_by_transaction(partition, source, query, inner_request_size)
+                            BlocksAndTransactions::collect_by_transaction(partition, source, query, inner_request_size).await
                         }
                         MultiDatatype::CallTraceDerivatives => {
-                            CallTraceDerivatives::collect_by_transaction(partition, source, query, None)
+                            CallTraceDerivatives::collect_by_transaction(partition, source, query, None).await
                         }
                         MultiDatatype::GethStateDiffs => {
-                            GethStateDiffs::collect_by_transaction(partition, source, query, None)
+                            GethStateDiffs::collect_by_transaction(partition, source, query, None).await
                         },
                         MultiDatatype::StateDiffs => {
-                            StateDiffs::collect_by_transaction(partition, source, query, inner_request_size)
+                            StateDiffs::collect_by_transaction(partition, source, query, inner_request_size).await
                         },
                         MultiDatatype::StateReads => {
-                            StateReads::collect_by_transaction(partition, source, query, inner_request_size)
+                            StateReads::collect_by_transaction(partition, source, query, inner_request_size).await
                         },
                     }
                 },
-            };
-            task.await
+            }
         }
     };
 }

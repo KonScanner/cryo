@@ -103,6 +103,18 @@ pub trait Dataset: Sync + Send {
         false
     }
 
+    /// preferred default for `inner_request_size` (blocks per RPC request).
+    ///
+    /// Only consulted when [`Self::use_block_ranges`] is `true`. Log-shaped
+    /// datasets (logs, erc20_transfers, erc721_transfers, erc20_approvals)
+    /// override this so a fresh `cryo …` invocation issues a sensible number
+    /// of `eth_getLogs` requests instead of one per block. The user's explicit
+    /// `--inner-request-size N` still wins via `max(user, dataset_default)`
+    /// in the central dispatcher.
+    fn default_inner_request_size() -> u64 {
+        1
+    }
+
     /// input arg aliases
     fn arg_aliases() -> Option<HashMap<Dim, Dim>> {
         None

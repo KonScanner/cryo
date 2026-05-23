@@ -35,7 +35,6 @@ impl Dataset for GethOpcodes {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for GethOpcodes {
     type Response = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<DefaultFrame>);
 
@@ -66,7 +65,6 @@ impl CollectByBlock for GethOpcodes {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for GethOpcodes {
     type Response = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<DefaultFrame>);
 

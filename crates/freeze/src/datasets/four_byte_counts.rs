@@ -24,7 +24,6 @@ impl Dataset for FourByteCounts {
 
 type BlockTxsTraces = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<BTreeMap<String, u64>>);
 
-#[async_trait::async_trait]
 impl CollectByBlock for FourByteCounts {
     type Response = BlockTxsTraces;
 
@@ -42,7 +41,6 @@ impl CollectByBlock for FourByteCounts {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for FourByteCounts {
     type Response = BlockTxsTraces;
 

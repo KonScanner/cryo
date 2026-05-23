@@ -25,7 +25,6 @@ pub struct GethCalls {
 
 impl Dataset for GethCalls {}
 
-#[async_trait::async_trait]
 impl CollectByBlock for GethCalls {
     type Response = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<CallFrame>);
 
@@ -41,7 +40,6 @@ impl CollectByBlock for GethCalls {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for GethCalls {
     type Response = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<CallFrame>);
 

@@ -23,7 +23,6 @@ impl Dataset for NonceDiffs {}
 
 type BlockTxsTraces = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<TraceResults>);
 
-#[async_trait::async_trait]
 impl CollectByBlock for NonceDiffs {
     type Response = BlockTxsTraces;
 
@@ -40,7 +39,6 @@ impl CollectByBlock for NonceDiffs {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for NonceDiffs {
     type Response = BlockTxsTraces;
 

@@ -29,7 +29,6 @@ impl Dataset for Nonces {
 
 type BlockTxAddressOutput = (u32, Option<Vec<u8>>, Vec<u8>, u64);
 
-#[async_trait::async_trait]
 impl CollectByBlock for Nonces {
     type Response = BlockTxAddressOutput;
 
@@ -48,7 +47,6 @@ impl CollectByBlock for Nonces {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for Nonces {
     type Response = ();
 }

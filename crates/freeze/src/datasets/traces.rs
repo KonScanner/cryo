@@ -41,7 +41,6 @@ impl Dataset for Traces {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for Traces {
     type Response = Vec<LocalizedTransactionTrace>;
 
@@ -57,7 +56,6 @@ impl CollectByBlock for Traces {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for Traces {
     type Response = Vec<LocalizedTransactionTrace>;
 

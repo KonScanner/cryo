@@ -12,7 +12,6 @@ repository.workspace = true
 
 [dependencies]
 alloy = { workspace = true }
-async-trait = { workspace = true }
 chrono = { workspace = true }
 colored = { workspace = true }
 cryo_to_df = { workspace = true }

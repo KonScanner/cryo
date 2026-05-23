@@ -20,7 +20,6 @@ impl ToDataFrames for BlocksAndTransactions {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for BlocksAndTransactions {
     type Response = <Transactions as CollectByBlock>::Response;
 
@@ -38,7 +37,6 @@ impl CollectByBlock for BlocksAndTransactions {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for BlocksAndTransactions {
     type Response = (
         <Blocks as CollectByTransaction>::Response,

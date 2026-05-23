@@ -27,7 +27,6 @@ impl Dataset for NativeTransfers {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for NativeTransfers {
     type Response = Vec<LocalizedTransactionTrace>;
 
@@ -43,7 +42,6 @@ impl CollectByBlock for NativeTransfers {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for NativeTransfers {
     type Response = Vec<LocalizedTransactionTrace>;
 

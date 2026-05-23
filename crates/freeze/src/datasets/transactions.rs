@@ -77,7 +77,6 @@ impl Dataset for Transactions {
 /// tuple representing transaction and optional receipt
 pub type TransactionAndReceipt = (Transaction, Option<TransactionReceipt>);
 
-#[async_trait::async_trait]
 impl CollectByBlock for Transactions {
     type Response = (Block, Vec<TransactionAndReceipt>, bool);
 
@@ -156,7 +155,6 @@ impl CollectByBlock for Transactions {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for Transactions {
     type Response = (TransactionAndReceipt, Block, bool, u32);
 

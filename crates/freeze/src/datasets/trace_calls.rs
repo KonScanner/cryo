@@ -45,7 +45,6 @@ impl Dataset for TraceCalls {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for TraceCalls {
     type Response = (u32, Vec<u8>, Vec<u8>, Vec<TransactionTrace>);
 

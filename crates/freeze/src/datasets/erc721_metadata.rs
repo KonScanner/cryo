@@ -33,7 +33,6 @@ impl Dataset for Erc721Metadata {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByBlock for Erc721Metadata {
     type Response = (u32, Vec<u8>, Option<String>, Option<String>);
 

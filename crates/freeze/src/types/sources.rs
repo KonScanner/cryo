@@ -139,6 +139,140 @@ impl Source {
         }
         Ok(out)
     }
+
+    /// Fetch many transactions by hash in a single JSON-RPC batch.
+    ///
+    /// One HTTP round-trip carrying N embedded `eth_getTransactionByHash`
+    /// calls. Missing transactions surface as `None` in the returned vector.
+    /// See [`Self::get_transaction_receipts_batch`] for the design rationale.
+    ///
+    /// # Errors
+    /// Transport failure on the batch envelope.
+    pub async fn get_transactions_by_hash_batch(
+        &self,
+        hashes: Vec<TxHash>,
+    ) -> Result<Vec<Option<Transaction>>> {
+        if hashes.is_empty() {
+            return Ok(Vec::new())
+        }
+        let _permit = self.permit_request().await;
+        let mut batch = alloy::rpc::client::BatchRequest::new(self.provider.client());
+        let mut waiters: Vec<alloy::rpc::client::Waiter<Option<Transaction>>> =
+            Vec::with_capacity(hashes.len());
+        for h in &hashes {
+            let w = batch
+                .add_call("eth_getTransactionByHash", &(*h,))
+                .map_err(|e| CollectError::CollectError(format!("batch add_call failed: {e:?}")))?;
+            waiters.push(w);
+        }
+        batch.await.map_err(|e| CollectError::CollectError(format!("batch send failed: {e:?}")))?;
+        let mut out = Vec::with_capacity(waiters.len());
+        for w in waiters {
+            out.push(
+                w.await.map_err(|e| {
+                    CollectError::CollectError(format!("batch waiter failed: {e:?}"))
+                })?,
+            );
+        }
+        Ok(out)
+    }
+
+    /// Fetch many blocks (transaction hashes only) in a single JSON-RPC batch.
+    ///
+    /// One HTTP round-trip carrying N embedded `eth_getBlockByNumber` calls
+    /// with `fullTransactions = false`. For full transactions, use
+    /// [`Self::get_full_blocks_batch`].
+    ///
+    /// # Errors
+    /// Transport failure on the batch envelope.
+    pub async fn get_blocks_batch(&self, block_numbers: Vec<u64>) -> Result<Vec<Option<Block>>> {
+        self.get_blocks_batch_impl(block_numbers, false).await
+    }
+
+    /// Fetch many blocks with full transaction bodies in a single JSON-RPC batch.
+    ///
+    /// One HTTP round-trip carrying N embedded `eth_getBlockByNumber` calls
+    /// with `fullTransactions = true`. Heavier per-request than
+    /// [`Self::get_blocks_batch`] — N is best kept smaller for full-tx mode.
+    ///
+    /// # Errors
+    /// Transport failure on the batch envelope.
+    pub async fn get_full_blocks_batch(
+        &self,
+        block_numbers: Vec<u64>,
+    ) -> Result<Vec<Option<Block>>> {
+        self.get_blocks_batch_impl(block_numbers, true).await
+    }
+
+    async fn get_blocks_batch_impl(
+        &self,
+        block_numbers: Vec<u64>,
+        full_transactions: bool,
+    ) -> Result<Vec<Option<Block>>> {
+        if block_numbers.is_empty() {
+            return Ok(Vec::new())
+        }
+        let _permit = self.permit_request().await;
+        let mut batch = alloy::rpc::client::BatchRequest::new(self.provider.client());
+        let mut waiters: Vec<alloy::rpc::client::Waiter<Option<Block>>> =
+            Vec::with_capacity(block_numbers.len());
+        for n in &block_numbers {
+            // eth_getBlockByNumber expects a hex-encoded quantity as the first param.
+            let tag = BlockNumberOrTag::Number(*n);
+            let w = batch
+                .add_call("eth_getBlockByNumber", &(tag, full_transactions))
+                .map_err(|e| CollectError::CollectError(format!("batch add_call failed: {e:?}")))?;
+            waiters.push(w);
+        }
+        batch.await.map_err(|e| CollectError::CollectError(format!("batch send failed: {e:?}")))?;
+        let mut out = Vec::with_capacity(waiters.len());
+        for w in waiters {
+            out.push(
+                w.await.map_err(|e| {
+                    CollectError::CollectError(format!("batch waiter failed: {e:?}"))
+                })?,
+            );
+        }
+        Ok(out)
+    }
+
+    /// Fetch traces for many transactions in a single JSON-RPC batch.
+    ///
+    /// Uses the parity `trace_transaction` method. One HTTP round-trip
+    /// carrying N embedded calls. Each entry in the returned vector is the
+    /// `Vec<LocalizedTransactionTrace>` for the corresponding input hash.
+    /// Failed/missing traces surface as an empty `Vec`.
+    ///
+    /// # Errors
+    /// Transport failure on the batch envelope.
+    pub async fn trace_transactions_batch(
+        &self,
+        hashes: Vec<TxHash>,
+    ) -> Result<Vec<Vec<LocalizedTransactionTrace>>> {
+        if hashes.is_empty() {
+            return Ok(Vec::new())
+        }
+        let _permit = self.permit_request().await;
+        let mut batch = alloy::rpc::client::BatchRequest::new(self.provider.client());
+        let mut waiters: Vec<alloy::rpc::client::Waiter<Vec<LocalizedTransactionTrace>>> =
+            Vec::with_capacity(hashes.len());
+        for h in &hashes {
+            let w = batch
+                .add_call("trace_transaction", &(*h,))
+                .map_err(|e| CollectError::CollectError(format!("batch add_call failed: {e:?}")))?;
+            waiters.push(w);
+        }
+        batch.await.map_err(|e| CollectError::CollectError(format!("batch send failed: {e:?}")))?;
+        let mut out = Vec::with_capacity(waiters.len());
+        for w in waiters {
+            out.push(
+                w.await.map_err(|e| {
+                    CollectError::CollectError(format!("batch waiter failed: {e:?}"))
+                })?,
+            );
+        }
+        Ok(out)
+    }
 }
 
 const DEFAULT_INNER_REQUEST_SIZE: u64 = 100;

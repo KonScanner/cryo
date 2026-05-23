@@ -28,7 +28,6 @@ impl Dataset for StorageDiffs {
 
 type BlockTxsTraces = (Option<u32>, Vec<Option<Vec<u8>>>, Vec<TraceResults>);
 
-#[async_trait::async_trait]
 impl CollectByBlock for StorageDiffs {
     type Response = BlockTxsTraces;
 
@@ -46,7 +45,6 @@ impl CollectByBlock for StorageDiffs {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for StorageDiffs {
     type Response = BlockTxsTraces;
 

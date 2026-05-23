@@ -17,7 +17,6 @@ pub struct GethNonceDiffs {
 
 impl Dataset for GethNonceDiffs {}
 
-#[async_trait::async_trait]
 impl CollectByBlock for GethNonceDiffs {
     type Response = <GethStateDiffs as CollectByBlock>::Response;
 
@@ -31,7 +30,6 @@ impl CollectByBlock for GethNonceDiffs {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for GethNonceDiffs {
     type Response = <GethStateDiffs as CollectByTransaction>::Response;
 

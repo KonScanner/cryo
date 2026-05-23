@@ -33,7 +33,6 @@ impl Dataset for Codes {
 
 type BlockTxAddressOutput = (u32, Option<Vec<u8>>, Vec<u8>, Vec<u8>);
 
-#[async_trait::async_trait]
 impl CollectByBlock for Codes {
     type Response = BlockTxAddressOutput;
 
@@ -50,7 +49,6 @@ impl CollectByBlock for Codes {
     }
 }
 
-#[async_trait::async_trait]
 impl CollectByTransaction for Codes {
     type Response = ();
 }
