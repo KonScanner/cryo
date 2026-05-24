@@ -23,6 +23,31 @@ name = "cryo"
 path = "rust/lib.rs"
 crate-type = ["cdylib"]
 
+# pyo3 0.27 is the floor pinned by our transitive dep: pyo3-polars 0.26.0
+# requires `pyo3 ^0.27` (see https://crates.io/crates/pyo3-polars/0.26.0/dependencies).
+# Bumping pyo3 to 0.28 here would create a duplicate-pyo3-version graph
+# (Cargo would resolve both 0.27 and 0.28), which the pyo3 macros explicitly
+# reject at compile time with "found multiple versions of pyo3". Stay on
+# 0.27 until pyo3-polars publishes a 0.27 that requires `pyo3 ^0.28`.
+#
+# pyo3 0.27 already supports Python 3.14 final (pyo3 CHANGELOG: 0.26.0 "Test
+# against Python 3.14 final release"; 0.27.x inherits). No source changes
+# were required for the 3.13 → 3.14 transition.
+#
+# abi3 (`pyo3/abi3-py310` etc.) is deliberately NOT enabled. Trade-offs per
+# https://pyo3.rs/v0.28.3/building-and-distribution.html#py_limited_api-abi3:
+#   - PRO: one wheel covers 3.10–3.14 (removes the builder/runtime Python
+#     version match constraint, simplifies multi-version distribution).
+#   - CON: pyo3 cannot use version-specific optimizations; some C-API
+#     features (buffer API < 3.11, text signatures on classes < 3.10, dict
+#     and weakref options < 3.9) are unavailable.
+#   - BLOCKER: pyo3-polars 0.26 does not advertise abi3 compatibility in
+#     its Cargo.toml, and its PyDataFrame internals depend on polars' own
+#     pyo3 usage — enabling abi3 here would need separate verification
+#     across all 3.10–3.14 wheels.
+# We ship a single Docker image with a single Python version. There is no
+# wheel-distribution win to justify the verification cost. Revisit if we
+# ever publish cryo wheels publicly.
 [dependencies]
 cryo_cli            = { version = "0.3.2", path = "../cli" }
 cryo_freeze         = { version = "0.3.2", path = "../freeze" }
