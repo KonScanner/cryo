@@ -55,7 +55,7 @@ polars              = { version = "0.53", features = ["parquet", "string_encodin
 pyo3                = { version = "0.27", features = ["extension-module"] }
 pyo3-async-runtimes = { version = "0.27", features = ["tokio-runtime"] }
 pyo3-polars         = "0.26"
-tokio               = { version = "1.33", features = ["macros", "rt-multi-thread", "sync"] }
+tokio               = { version = "1.52", features = ["macros", "rt-multi-thread", "sync"] }
 
 [build-dependencies]
 pyo3-build-config = "0.27"

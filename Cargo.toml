@@ -37,23 +37,35 @@ alloy = { version = "2.0.5", features = [
     "provider-trace-api",
     "transport-ipc-mock",
 ] }
-anstyle = "1.0.4"
-chrono = { version = "0.4.31", features = ["serde"] }
+anstyle = "1.0.14"
+# chrono is capped at 0.4.41: polars-arrow 0.53 requires chrono's `std`
+# feature, which 0.4.42 removed (it became default-on with no opt-out). Lift
+# this cap together with polars 0.54+.
+chrono = { version = "0.4.41", features = ["serde"] }
 clap_cryo = { version = "4.3.21-cryo", features = [
     "derive",
     "color",
     "unstable-styles",
 ] }
-colored = "2.0.4"
-color-print = "0.3.5"
-eyre = "0.6.8"
-futures = "0.3.29"
-governor = "0.6.0"
+# colored stays on 2.x: colored 3.0 dropped the `truecolor()` method that
+# crates/cli/src/args.rs:334 relies on for the optional-subcommands header.
+# Bumping requires rewriting that header to use anstyle (already imported)
+# or `\x1b[…m` escapes, which is not free. Stay until a more targeted bump.
+colored = "2.2.0"
+color-print = "0.3.7"
+eyre = "0.6.12"
+futures = "0.3.32"
+# governor stays on 0.6.x: 0.10 renames `NoOpMiddleware` and reshapes the
+# `RateLimiter<_, _, _, _>` type alias used in crates/freeze/src/types/sources.rs.
+# Holding the latest 0.6 patch until we decide to migrate the alias.
+governor = "0.6.3"
 hex = "0.4.3"
-heck = "0.4.1"
-indexmap = "2.1.0"
-indicatif = "0.17.7"
-lazy_static = "1.4.0"
+heck = "0.5.0"
+indexmap = "2.14.0"
+indicatif = "0.18.4"
+# lazy_static intentionally removed: not used by any cryo crate (only pulled
+# in transitively by colored/color-print). LazyLock (std, since 1.80) is the
+# modern replacement if we ever need one in our own code.
 mesc = "0.1.4"
 polars = { version = "0.53", features = [
     "parquet",
@@ -68,6 +80,11 @@ polars = { version = "0.53", features = [
 # compression levels in the CLI.
 polars-parquet = "0.53"
 prefix-hex = "0.7.1"
+# pyo3 stays on 0.27: pyo3-polars 0.26.0 requires `pyo3 ^0.27`. Bumping to
+# 0.28 here yields a duplicate-pyo3 graph that the pyo3 macros reject at
+# compile time. Revisit when pyo3-polars publishes a release that targets
+# `pyo3 ^0.28`. See crates/python/Cargo.toml for the full rationale.
+#
 # NB: `extension-module` is set per-crate in crates/python/Cargo.toml only.
 # Enabling it workspace-wide propagates via Cargo's feature unification and
 # breaks the standalone `cryo` binary (link errors for PyErr_* symbols).
@@ -75,13 +92,16 @@ pyo3 = "0.27"
 pyo3-build-config = "0.27"
 pyo3-async-runtimes = { version = "0.27", features = ["tokio-runtime"] }
 pyo3-polars = "0.26"
-rand = "0.8.5"
-regex = "1.10.2"
-serde = { version = "1.0.191", features = ["derive"] }
-serde_json = "1.0.108"
-thiserror = "1.0.50"
+# rand stays on 0.8.x: 0.9 removed `thread_rng` (renamed `rng`) and rebuilt
+# the `SeedableRng`/`SliceRandom` traits, which `crates/cli/src/parse/partitions.rs`
+# uses. Bumping is a small mechanical refactor — separate work item.
+rand = "0.8.6"
+regex = "1.12.3"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.150"
+thiserror = "2.0.18"
 thousands = "0.2.0"
-tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread", "sync"] }
+tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread", "sync"] }
 
 [profile.dev]
 incremental = true
