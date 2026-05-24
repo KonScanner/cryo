@@ -45,7 +45,11 @@ impl CollectByBlock for Erc20Supplies {
         let block_number = request.ethers_block_number()?;
         let contract = request.ethers_address()?;
         let output = source.call2(contract, call_data, block_number).await.ok();
-        let output = output.map(|x| U256::from_be_slice(x.as_ref()));
+        // Non-ERC-20 contracts (proxies, weird ABIs) may answer the totalSupply()
+        // selector with a return >32 bytes; from_be_slice would panic.
+        // try_from_be_slice silently drops those rows — better than a tokio panic
+        // that nukes the whole chunk.
+        let output = output.and_then(|x| U256::try_from_be_slice(x.as_ref()));
         Ok((request.block_number()? as u32, request.address()?, output))
     }
 

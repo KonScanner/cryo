@@ -39,7 +39,9 @@ impl CollectByBlock for Erc20Balances {
         let block_number = request.ethers_block_number()?;
         let contract = request.ethers_contract()?;
         let balance = source.call2(contract, call_data, block_number).await.ok();
-        let balance = balance.map(|x| U256::from_be_slice(x.as_ref()));
+        // try_from_be_slice avoids panicking on proxies / non-standard contracts
+        // whose balanceOf() returns more than 32 bytes (drop the row instead).
+        let balance = balance.and_then(|x| U256::try_from_be_slice(x.as_ref()));
         Ok((request.block_number()? as u32, request.contract()?, request.address()?, balance))
     }
 
