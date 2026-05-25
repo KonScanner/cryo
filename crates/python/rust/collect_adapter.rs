@@ -205,6 +205,14 @@ pub fn _collect(
             multicall,
             multicall_batch_size,
             multicall_require_success,
+            // Backwards-compat CLI alias for the legacy `--multicall` flag — accepted as
+            // a no-op so the field is wired but unread. The Python entrypoint sets it to
+            // false; the canonical `multicall` field above carries the real value.
+            _multicall_legacy_alias: false,
+            // L1 RPC is CLI-only at the moment; the Python wheel doesn't yet expose it.
+            // Programmatic callers needing dual-chain Source should use
+            // `Source::with_l1_rpc(url)` directly after constructing a Source.
+            l1_rpc: None,
         };
         pyo3_async_runtimes::tokio::future_into_py(py, async move {
             match run_collect(args).await {

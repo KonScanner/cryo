@@ -153,7 +153,12 @@ pub(crate) fn process_traces(
         process_action(&trace.trace.action, columns, schema);
         process_result(&trace.trace.result, columns, schema);
         store!(schema, columns, action_type, action_type_to_string(&trace.trace.action.kind()));
-        store!(schema, columns, trace_address, format_trace_address(&trace.trace.trace_address, '_'));
+        store!(
+            schema,
+            columns,
+            trace_address,
+            format_trace_address(&trace.trace.trace_address, '_')
+        );
         store!(schema, columns, subtraces, trace.trace.subtraces as u32);
         store!(schema, columns, transaction_index, trace.transaction_position.map(|x| x as u32));
         store!(schema, columns, transaction_hash, trace.transaction_hash.map(|x| x.to_vec()));

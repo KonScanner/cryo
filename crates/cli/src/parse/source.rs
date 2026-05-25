@@ -63,8 +63,7 @@ pub(crate) async fn parse_source(args: &Args) -> Result<Source, ParseError> {
             args.initial_backoff,
             args.compute_units_per_second,
         );
-        let l1_connect: BuiltInConnectionString =
-            url.parse().map_err(ParseError::ProviderError)?;
+        let l1_connect: BuiltInConnectionString = url.parse().map_err(ParseError::ProviderError)?;
         let l1_client: RpcClient = ClientBuilder::default()
             .layer(l1_retry_layer)
             .connect_with(l1_connect)

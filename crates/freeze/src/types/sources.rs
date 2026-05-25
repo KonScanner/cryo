@@ -316,8 +316,8 @@ impl Source {
     /// `requests_per_second`:
     /// * `None` or `Some(0)` → no rate limiter.
     /// * `Some(n)` for `n > 0` → `governor` direct rate limiter at `n` req/s with burst 1.
-    /// * Values above `u32::MAX` are treated as "no limit" (a saturating ceiling
-    ///   rather than silent truncation to a wrong-but-plausible u32 value).
+    /// * Values above `u32::MAX` are treated as "no limit" (a saturating ceiling rather than silent
+    ///   truncation to a wrong-but-plausible u32 value).
     ///
     /// Both limits are honoured by [`Source`]'s internal batch helpers
     /// (`get_transaction_receipts_batch`, `get_blocks_batch`, etc.) which
