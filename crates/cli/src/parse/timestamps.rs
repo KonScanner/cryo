@@ -368,6 +368,9 @@ mod tests {
             max_concurrent_chunks: None,
             rpc_url: "".to_string(),
             labels: SourceLabels::default(),
+            l1_provider: None,
+            l1_chain_id: None,
+            l1_rpc_url: None,
         }
     }
 

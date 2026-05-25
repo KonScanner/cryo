@@ -28,7 +28,9 @@ use governor::{
     clock::DefaultClock,
     middleware::NoOpMiddleware,
     state::{direct::NotKeyed, InMemoryState},
+    Quota,
 };
+use std::num::NonZeroU32;
 use tokio::sync::{AcquireError, Semaphore, SemaphorePermit};
 
 use crate::CollectError;
@@ -39,9 +41,9 @@ pub type RateLimiter = governor::RateLimiter<NotKeyed, InMemoryState, DefaultClo
 /// Options for fetching data from node
 #[derive(Clone, Debug)]
 pub struct Source {
-    /// provider
+    /// provider for the primary (L2 or L1) RPC
     pub provider: RootProvider,
-    /// chain_id of network
+    /// chain_id of primary network
     pub chain_id: u64,
     /// number of blocks per log request
     pub inner_request_size: u64,
@@ -55,6 +57,19 @@ pub struct Source {
     pub rate_limiter: Arc<Option<RateLimiter>>,
     /// Labels (these are non-functional)
     pub labels: SourceLabels,
+    /// Optional secondary provider for the L1 (settlement) chain.
+    ///
+    /// Populated when `--l1-rpc <url>` is passed; consumed by L2-specific
+    /// datasets that need to read L1-side events (batch postings, deposits,
+    /// output proposals, etc.). `None` for single-chain runs. The same
+    /// `semaphore` and `rate_limiter` gate calls on both providers — this is
+    /// intentionally simple for now; a future change may give the L1 path
+    /// its own bucket.
+    pub l1_provider: Option<RootProvider>,
+    /// chain_id reported by the L1 RPC. `None` if `l1_provider` is `None`.
+    pub l1_chain_id: Option<u64>,
+    /// rpc url passed via `--l1-rpc`. `None` if not configured.
+    pub l1_rpc_url: Option<String>,
 }
 
 impl Source {
@@ -283,8 +298,43 @@ const DEFAULT_MAX_CONCURRENT_REQUESTS: u64 = 100;
 
 /// builder
 impl Source {
-    /// initialize source
+    /// initialize source with default concurrency limits and no per-second rate cap.
+    ///
+    /// See [`Source::init_with_limits`] to override `max_concurrent_requests` /
+    /// `requests_per_second` from a programmatic / Python caller.
     pub async fn init(rpc_url: Option<String>) -> Result<Source> {
+        Self::init_with_limits(rpc_url, None, None).await
+    }
+
+    /// initialize source with explicit concurrency + rate caps.
+    ///
+    /// `max_concurrent_requests`:
+    /// * `None` → [`DEFAULT_MAX_CONCURRENT_REQUESTS`] (100) — matches the CLI default.
+    /// * `Some(0)` → no semaphore (unlimited concurrency).
+    /// * `Some(n)` for `n > 0` → semaphore with `n` permits.
+    ///
+    /// `requests_per_second`:
+    /// * `None` or `Some(0)` → no rate limiter.
+    /// * `Some(n)` for `n > 0` → `governor` direct rate limiter at `n` req/s with burst 1.
+    /// * Values above `u32::MAX` are treated as "no limit" (a saturating ceiling
+    ///   rather than silent truncation to a wrong-but-plausible u32 value).
+    ///
+    /// Both limits are honoured by [`Source`]'s internal batch helpers
+    /// (`get_transaction_receipts_batch`, `get_blocks_batch`, etc.) which
+    /// acquire a single permit for the whole batch.
+    ///
+    /// # Errors
+    /// Returns [`CollectError::RPCError`] if the chain id cannot be fetched
+    /// from the configured RPC.
+    ///
+    /// # Panics
+    /// Panics on an unparseable `rpc_url` — callers should validate the URL
+    /// upstream. (TODO: move to a typed `Result` here too.)
+    pub async fn init_with_limits(
+        rpc_url: Option<String>,
+        max_concurrent_requests: Option<u64>,
+        requests_per_second: Option<u64>,
+    ) -> Result<Source> {
         let rpc_url: String = parse_rpc_url(rpc_url);
         let parsed_rpc_url: Url = rpc_url.parse().expect("rpc url is not valid");
         let provider: RootProvider =
@@ -294,8 +344,33 @@ impl Source {
             .await
             .map_err(|_| CollectError::RPCError("could not get chain_id".to_string()))?;
 
-        let rate_limiter = None;
-        let semaphore = None;
+        let max_concurrent_requests =
+            max_concurrent_requests.unwrap_or(DEFAULT_MAX_CONCURRENT_REQUESTS);
+        let semaphore = if max_concurrent_requests > 0 {
+            // `as usize` would *wrap* on 32-bit hosts (e.g. 5_000_000_000 → ~705M)
+            // — saturate instead so an overflowing request count maps to "no cap"
+            // rather than a silently-wrong small one.
+            let permits = usize::try_from(max_concurrent_requests).unwrap_or(usize::MAX);
+            Some(Semaphore::new(permits))
+        } else {
+            None
+        };
+
+        // Burst of 1 keeps the cap a hard ceiling — matches the CLI path in
+        // crates/cli/src/parse/source.rs. Use `const ONE` so the unwrap is
+        // proven at compile time, not at call time.
+        const ONE: NonZeroU32 = match NonZeroU32::new(1) {
+            Some(n) => n,
+            None => unreachable!(),
+        };
+        let rate_limiter = requests_per_second
+            .filter(|&rps| rps > 0)
+            .and_then(|rps| u32::try_from(rps).ok())
+            .and_then(NonZeroU32::new)
+            .map(|value| {
+                let quota = Quota::per_second(value).allow_burst(ONE);
+                RateLimiter::direct(quota)
+            });
 
         let provider: RootProvider = ProviderBuilder::default().connect_http(parsed_rpc_url);
 
@@ -306,22 +381,59 @@ impl Source {
             max_concurrent_chunks: Some(DEFAULT_MAX_CONCURRENT_CHUNKS),
             rpc_url,
             labels: SourceLabels {
-                max_concurrent_requests: Some(DEFAULT_MAX_CONCURRENT_REQUESTS),
-                max_requests_per_second: Some(0),
+                max_concurrent_requests: Some(max_concurrent_requests),
+                max_requests_per_second: requests_per_second,
                 max_retries: Some(DEFAULT_MAX_RETRIES),
                 initial_backoff: Some(DEFAULT_INTIAL_BACKOFF),
             },
-            rate_limiter: rate_limiter.into(),
-            semaphore: semaphore.into(),
+            rate_limiter: Arc::new(rate_limiter),
+            semaphore: Arc::new(semaphore),
+            l1_provider: None,
+            l1_chain_id: None,
+            l1_rpc_url: None,
         };
 
         Ok(source)
     }
 
-    // /// set rate limit
-    // pub fn rate_limit(mut self, _requests_per_second: u64) -> Source {
-    //     todo!();
-    // }
+    /// Attach an L1 (settlement) RPC to an existing source.
+    ///
+    /// Used by L2-specific datasets that need to read L1-side events. The
+    /// resulting `Source` shares its semaphore + rate limiter with the L2
+    /// path, so an aggressive L1 RPC will spend permits from the same pool.
+    ///
+    /// # Errors
+    /// Returns [`CollectError::RPCError`] if the L1 chain id cannot be fetched.
+    ///
+    /// # Panics
+    /// Panics on an unparseable `l1_rpc_url`.
+    pub async fn with_l1_rpc(mut self, l1_rpc_url: String) -> Result<Source> {
+        let parsed: Url = l1_rpc_url.parse().expect("l1 rpc url is not valid");
+        let provider: RootProvider = ProviderBuilder::default().connect_http(parsed);
+        let chain_id = provider
+            .get_chain_id()
+            .await
+            .map_err(|_| CollectError::RPCError("could not get l1 chain_id".to_string()))?;
+        self.l1_provider = Some(provider);
+        self.l1_chain_id = Some(chain_id);
+        self.l1_rpc_url = Some(l1_rpc_url);
+        Ok(self)
+    }
+
+    /// Borrow the configured L1 provider, or fail with a clear message.
+    ///
+    /// Datasets that require L1 data should call this rather than indexing
+    /// `self.l1_provider` so the error message points at the missing CLI flag.
+    ///
+    /// # Errors
+    /// Returns [`CollectError::CollectError`] if `--l1-rpc` was not configured.
+    pub fn require_l1_provider(&self) -> Result<&RootProvider> {
+        self.l1_provider.as_ref().ok_or_else(|| {
+            CollectError::CollectError(
+                "this dataset requires an L1 RPC: pass --l1-rpc <url>".to_string(),
+            )
+        })
+    }
 }
 
 fn parse_rpc_url(rpc_url: Option<String>) -> String {

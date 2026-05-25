@@ -1,3 +1,4 @@
+use super::traces;
 use crate::*;
 use alloy::rpc::types::trace::geth::{
     DefaultFrame, GethDebugTracingOptions, GethDefaultTracingOptions,
@@ -123,12 +124,7 @@ fn process_trace(
         store!(schema, columns, block_number, *block_number);
         store!(schema, columns, transaction_hash, tx.clone());
         store!(schema, columns, transaction_index, tx_index);
-        store!(
-            schema,
-            columns,
-            trace_address,
-            trace_address.iter().map(|&n| n.to_string()).collect::<Vec<_>>().join(" ")
-        );
+        store!(schema, columns, trace_address, traces::format_trace_address(&trace_address, ' '));
 
         store!(schema, columns, depth, struct_log.depth);
         store!(schema, columns, error, struct_log.error);

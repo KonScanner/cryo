@@ -422,6 +422,9 @@ mod tests {
             max_concurrent_chunks: None,
             rpc_url: "".to_string(),
             labels: cryo_freeze::SourceLabels::default(),
+            l1_provider: None,
+            l1_chain_id: None,
+            l1_rpc_url: None,
         };
         let source = Arc::new(source);
         for (test, res) in tests {
@@ -488,6 +491,9 @@ mod tests {
             max_concurrent_chunks: Some(1),
             rate_limiter: Arc::new(None),
             labels: cryo_freeze::SourceLabels::default(),
+            l1_provider: None,
+            l1_chain_id: None,
+            l1_rpc_url: None,
         });
         for (test, res) in tests {
             match test {
@@ -565,6 +571,9 @@ mod tests {
             max_concurrent_chunks: Some(1),
             rpc_url: "".to_string(),
             labels: cryo_freeze::SourceLabels::default(),
+            l1_provider: None,
+            l1_chain_id: None,
+            l1_rpc_url: None,
         };
         let source = Arc::new(source);
         for (test, res) in tests {

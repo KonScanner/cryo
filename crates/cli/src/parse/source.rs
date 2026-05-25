@@ -49,6 +49,34 @@ pub(crate) async fn parse_source(args: &Args) -> Result<Source, ParseError> {
     let semaphore = tokio::sync::Semaphore::new(max_concurrent_requests as usize);
     let semaphore = Arc::new(Some(semaphore));
 
+    // Optional L1 (settlement) provider for L2-related datasets.
+    //
+    // Builds a separate provider — alloy's `RetryBackoffLayer` is not Clone in
+    // the version we ship, so we construct a fresh layer for the L1 client.
+    // L1 calls share the L2 source's semaphore + rate_limiter (see Source).
+    //
+    // Resolution order: `--l1-rpc <url>` flag → `L1_RPC_URL` env var → none.
+    let l1_rpc_arg = args.l1_rpc.clone().or_else(|| env::var("L1_RPC_URL").ok());
+    let (l1_provider, l1_chain_id, l1_rpc_url) = if let Some(url) = l1_rpc_arg {
+        let l1_retry_layer = RetryBackoffLayer::new(
+            args.max_retries,
+            args.initial_backoff,
+            args.compute_units_per_second,
+        );
+        let l1_connect: BuiltInConnectionString =
+            url.parse().map_err(ParseError::ProviderError)?;
+        let l1_client: RpcClient = ClientBuilder::default()
+            .layer(l1_retry_layer)
+            .connect_with(l1_connect)
+            .await
+            .map_err(ParseError::ProviderError)?;
+        let l1_provider: RootProvider = ProviderBuilder::default().connect_client(l1_client);
+        let l1_chain_id = l1_provider.get_chain_id().await.map_err(ParseError::ProviderError)?;
+        (Some(l1_provider), Some(l1_chain_id), Some(url))
+    } else {
+        (None, None, None)
+    };
+
     let output = Source {
         chain_id,
         inner_request_size: args.inner_request_size,
@@ -63,6 +91,9 @@ pub(crate) async fn parse_source(args: &Args) -> Result<Source, ParseError> {
             max_retries: Some(args.max_retries),
             initial_backoff: Some(args.initial_backoff),
         },
+        l1_provider,
+        l1_chain_id,
+        l1_rpc_url,
     };
 
     Ok(output)

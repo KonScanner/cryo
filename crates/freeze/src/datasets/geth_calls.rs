@@ -1,3 +1,4 @@
+use super::traces;
 use crate::*;
 use alloy::{primitives::U256, rpc::types::trace::geth::CallFrame};
 use polars::prelude::*;
@@ -91,12 +92,7 @@ fn process_trace(
     store!(schema, columns, block_number, *block_number);
     store!(schema, columns, transaction_hash, tx.clone());
     store!(schema, columns, transaction_index, tx_index);
-    store!(
-        schema,
-        columns,
-        trace_address,
-        trace_address.iter().map(|&n| n.to_string()).collect::<Vec<_>>().join(" ")
-    );
+    store!(schema, columns, trace_address, traces::format_trace_address(&trace_address, ' '));
 
     for (s, subcall) in trace.calls.into_iter().enumerate() {
         let mut sub_trace_address = trace_address.clone();

@@ -90,6 +90,14 @@ pub struct Args {
     #[arg(short, long, help_heading = "Source Options")]
     pub rpc: Option<String>,
 
+    /// L1 (settlement) RPC url for L2 datasets that read L1-side events.
+    ///
+    /// Required by datasets like `op_batch_submissions`, `arb_retryable_tickets`,
+    /// `zks_l1_batches`, `l1_to_l2_inbox`, `l2_output_roots_on_l1` and the pan-L2
+    /// `blob_sidecars` table. Ignored when the active dataset is L2-only.
+    #[arg(long, value_name = "URL", help_heading = "Source Options")]
+    pub l1_rpc: Option<String>,
+
     /// Network name [default: name of eth_getChainId]
     #[arg(long, help_heading = "Source Options")]
     pub network_name: Option<String>,
@@ -265,9 +273,33 @@ pub struct Args {
     #[arg(long, value_name = "tracer", help_heading = "Dataset-specific Options")]
     pub js_tracer: Option<String>,
 
-    /// Batch eth_calls through Multicall3 (currently only the `eth_calls` dataset)
-    #[arg(long, help_heading = "Dataset-specific Options")]
+    /// Disable Multicall3 batching for eth_calls / erc20_balances.
+    ///
+    /// Multicall3 batching is **on by default** — calls sharing a block are
+    /// aggregated through Multicall3 in chunks of `multicall_batch_size`, with
+    /// a halving fallback on RPC error and a per-call fallback at blocks
+    /// earlier than the Multicall3 deploy block on the active chain. Pass
+    /// `--no-multicall` to fall back to one `eth_call` per call.
+    #[arg(
+        long = "no-multicall",
+        action = clap_cryo::ArgAction::SetFalse,
+        default_value_t = true,
+        help_heading = "Dataset-specific Options"
+    )]
     pub multicall: bool,
+
+    /// Backwards-compatibility no-op for the legacy `--multicall` flag.
+    ///
+    /// Multicall3 batching is on by default now (see `--no-multicall`); the old
+    /// `--multicall` flag is accepted silently so existing scripts don't break.
+    /// This field is not read.
+    #[arg(
+        long = "multicall",
+        action = clap_cryo::ArgAction::SetTrue,
+        hide = true,
+        help_heading = "Dataset-specific Options"
+    )]
+    pub _multicall_legacy_alias: bool,
 
     /// Max inner calls per Multicall3 batch (only used with --multicall)
     #[arg(

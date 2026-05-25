@@ -109,6 +109,38 @@ pub(crate) fn filter_traces_by_from_to_addresses(
     traces.into_iter().filter(from_filter).filter(to_filter).collect()
 }
 
+/// Render a parity `trace_address` path as a single separator-joined string
+/// column. Used by `traces`, `trace_calls`, `geth_calls`, `geth_opcodes`, and
+/// related trace-derived datasets.
+///
+/// Allocates a single `String` of the final capacity instead of a `Vec<String>` +
+/// intermediate per-element allocations + `join`. On busy mainnet blocks this runs
+/// millions of times per partition (one per trace row); the column is hot enough
+/// to justify the helper.
+///
+/// `sep` is per-dataset: the parity-traces datasets use `'_'`; the geth-callTracer
+/// / opcodes datasets historically use `' '`. Preserve the caller's choice rather
+/// than unifying — that's a column-format change.
+#[inline]
+pub(crate) fn format_trace_address<T: std::fmt::Display>(trace_address: &[T], sep: char) -> String {
+    use std::fmt::Write as _;
+    if trace_address.is_empty() {
+        return String::new();
+    }
+    // Heuristic: ~3 decimal digits + 1 separator per component.
+    let mut s = String::with_capacity(trace_address.len() * 4);
+    let mut iter = trace_address.iter();
+    if let Some(first) = iter.next() {
+        // write! into a String is infallible (std::fmt::Error never returned).
+        let _ = write!(&mut s, "{}", first);
+    }
+    for n in iter {
+        s.push(sep);
+        let _ = write!(&mut s, "{}", n);
+    }
+    s
+}
+
 /// process block into columns
 pub(crate) fn process_traces(
     traces: &[LocalizedTransactionTrace],
@@ -121,18 +153,7 @@ pub(crate) fn process_traces(
         process_action(&trace.trace.action, columns, schema);
         process_result(&trace.trace.result, columns, schema);
         store!(schema, columns, action_type, action_type_to_string(&trace.trace.action.kind()));
-        store!(
-            schema,
-            columns,
-            trace_address,
-            trace
-                .trace
-                .trace_address
-                .iter()
-                .map(|n| n.to_string())
-                .collect::<Vec<String>>()
-                .join("_")
-        );
+        store!(schema, columns, trace_address, format_trace_address(&trace.trace.trace_address, '_'));
         store!(schema, columns, subtraces, trace.trace.subtraces as u32);
         store!(schema, columns, transaction_index, trace.transaction_position.map(|x| x as u32));
         store!(schema, columns, transaction_hash, trace.transaction_hash.map(|x| x.to_vec()));

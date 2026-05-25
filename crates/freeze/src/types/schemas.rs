@@ -257,7 +257,7 @@ mod tests {
         let table = Datatype::Blocks
             .table_schema(&get_u256_types(), &ColumnEncoding::Hex, &None, &None, &cols, None, None)
             .unwrap();
-        assert_eq!(21, table.columns().len());
+        assert_eq!(23, table.columns().len());
         assert!(table.columns().contains(&"block_hash"));
         assert!(table.columns().contains(&"transactions_root"));
     }
@@ -276,8 +276,8 @@ mod tests {
                 None,
             )
             .unwrap();
-        assert_eq!(9, table.columns().len());
-        assert_eq!(["chain_id", "receipts_root"], table.columns()[7..9]);
+        assert_eq!(11, table.columns().len());
+        assert_eq!(["chain_id", "receipts_root"], table.columns()[9..11]);
 
         // Non-existing include is skipped
         let inc_cols = Some(vec!["chain_id".to_string(), "foo_bar".to_string()]);
@@ -308,18 +308,19 @@ mod tests {
                 None,
             )
             .unwrap();
-        assert_eq!(21, table.columns().len());
+        assert_eq!(23, table.columns().len());
         assert!(table.columns().contains(&"block_hash"));
         assert!(table.columns().contains(&"transactions_root"));
     }
 
     #[test]
     fn test_table_schema_exclude_cols() {
-        // defaults
+        // defaults — Blocks default_columns grew by 2 (`withdrawals_count`,
+        // `withdrawals_amount_gwei`) in the post-merge model update.
         let table = Datatype::Blocks
             .table_schema(&get_u256_types(), &ColumnEncoding::Hex, &None, &None, &None, None, None)
             .unwrap();
-        assert_eq!(8, table.columns().len());
+        assert_eq!(10, table.columns().len());
         assert!(table.columns().contains(&"author"));
         assert!(table.columns().contains(&"extra_data"));
 
@@ -335,7 +336,7 @@ mod tests {
                 None,
             )
             .unwrap();
-        assert_eq!(6, table.columns().len());
+        assert_eq!(8, table.columns().len());
         assert!(!table.columns().contains(&"author"));
         assert!(!table.columns().contains(&"extra_data"));
 
@@ -352,7 +353,7 @@ mod tests {
                 None,
             )
             .unwrap();
-        assert_eq!(7, table.columns().len());
+        assert_eq!(9, table.columns().len());
         assert!(!table.columns().contains(&"timestamp"));
         assert!(!table.columns().contains(&"foo_bar"));
     }
@@ -374,7 +375,7 @@ mod tests {
             .unwrap();
         assert!(!table.columns().contains(&"author"));
         assert!(!table.columns().contains(&"extra_data"));
-        assert_eq!(7, table.columns().len());
-        assert_eq!(["chain_id", "receipts_root"], table.columns()[5..7]);
+        assert_eq!(9, table.columns().len());
+        assert_eq!(["chain_id", "receipts_root"], table.columns()[7..9]);
     }
 }

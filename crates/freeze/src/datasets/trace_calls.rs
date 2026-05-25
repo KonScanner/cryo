@@ -84,12 +84,7 @@ fn process_transaction_traces(
         process_action(&trace.action, columns, schema);
         process_result(&trace.result, columns, schema);
         store!(schema, columns, action_type, traces::action_type_to_string(&trace.action.kind()));
-        store!(
-            schema,
-            columns,
-            trace_address,
-            trace.trace_address.iter().map(|n| n.to_string()).collect::<Vec<String>>().join("_")
-        );
+        store!(schema, columns, trace_address, traces::format_trace_address(&trace.trace_address, '_'));
         store!(schema, columns, subtraces, trace.subtraces as u32);
         store!(schema, columns, transaction_index, transaction_index as u32);
         store!(schema, columns, block_number, block_number);
