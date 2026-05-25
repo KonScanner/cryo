@@ -30,6 +30,12 @@ pub struct Blocks {
     nonce: Vec<Option<Vec<u8>>>,
     base_fee_per_gas: Vec<Option<u64>>,
     withdrawals_root: Vec<Option<Vec<u8>>>,
+    // Per-block withdrawal aggregates (EIP-4895, post-Shanghai). For pre-Shanghai
+    // blocks `block.withdrawals` is `None` and we store 0/0 — the protocol simply
+    // hadn't enabled withdrawals yet; pair with `timestamp` to disambiguate
+    // "0 because no withdrawals this block" from "0 because pre-fork".
+    withdrawals_count: Vec<u32>,
+    withdrawals_amount_gwei: Vec<u64>,
     chain_id: Vec<u64>,
 }
 
@@ -43,6 +49,8 @@ impl Dataset for Blocks {
             "gas_used",
             "extra_data",
             "base_fee_per_gas",
+            "withdrawals_count",
+            "withdrawals_amount_gwei",
             "chain_id",
         ])
     }
@@ -118,5 +126,11 @@ pub(crate) fn process_block<TX>(block: Block<TX>, columns: &mut Blocks, schema: 
     store!(schema, columns, mix_hash, Some(block.header.mix_hash.to_vec()));
     store!(schema, columns, nonce, Some(block.header.nonce.0.to_vec()));
     store!(schema, columns, withdrawals_root, block.header.withdrawals_root.map(|x| x.0.to_vec()));
+    let (w_count, w_amount) = match block.withdrawals.as_ref() {
+        Some(ws) => (ws.len() as u32, ws.iter().map(|w| w.amount).sum::<u64>()),
+        None => (0u32, 0u64),
+    };
+    store!(schema, columns, withdrawals_count, w_count);
+    store!(schema, columns, withdrawals_amount_gwei, w_amount);
     Ok(())
 }
