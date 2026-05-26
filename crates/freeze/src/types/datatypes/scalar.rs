@@ -17,6 +17,7 @@ define_datatypes!(
     Erc20Supplies,
     Erc20Transfers,
     Erc20Approvals,
+    Erc20WrapperEvents,
     Erc721Metadata,
     Erc721Transfers,
     EthCalls,

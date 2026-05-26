@@ -13,6 +13,14 @@ pub enum MultiDatatype {
     /// geth debug versions of balance diffs, code diffs, nonce diffs, and storage diffs
     GethStateDiffs,
 
+    /// Log-derived datasets coalesced through one `eth_getLogs` per partition.
+    /// Members include raw `logs`, `erc20_transfers`, `erc20_approvals`,
+    /// `erc721_transfers`, and `erc20_wrapper_events` (Deposit/Withdrawal). All
+    /// share the `eth_getLogs` RPC primitive; when two or more are co-requested
+    /// cryo issues **one** call per partition with a UNION filter and fans the
+    /// response out to each requested sub-dataset's column accumulator.
+    LogEvents,
+
     /// balance diffs, code diffs, nonce diffs, and storage diffs
     StateDiffs,
 
@@ -33,6 +41,13 @@ impl MultiDatatype {
                 Datatype::GethCodeDiffs,
                 Datatype::GethNonceDiffs,
                 Datatype::GethStorageDiffs,
+            ],
+            MultiDatatype::LogEvents => vec![
+                Datatype::Logs,
+                Datatype::Erc20Transfers,
+                Datatype::Erc20Approvals,
+                Datatype::Erc721Transfers,
+                Datatype::Erc20WrapperEvents,
             ],
             MultiDatatype::StateDiffs => vec![
                 Datatype::BalanceDiffs,
@@ -55,6 +70,7 @@ impl MultiDatatype {
             MultiDatatype::BlocksAndTransactions,
             MultiDatatype::CallTraceDerivatives,
             MultiDatatype::GethStateDiffs,
+            MultiDatatype::LogEvents,
             MultiDatatype::StateDiffs,
             MultiDatatype::StateReads,
         ]

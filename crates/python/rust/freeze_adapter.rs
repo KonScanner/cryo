@@ -225,7 +225,7 @@ pub fn _freeze(
             }
         })
     } else {
-        return Err(PyErr::new::<PyTypeError, _>("must specify datatypes or command"))
+        Err(PyErr::new::<PyTypeError, _>("must specify datatypes or command"))
     }
 }
 

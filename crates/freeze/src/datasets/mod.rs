@@ -26,6 +26,8 @@ pub mod erc20_metadata;
 pub mod erc20_supplies;
 /// erc20 transfers
 pub mod erc20_transfers;
+/// erc20 wrapper events (Deposit / Withdrawal)
+pub mod erc20_wrapper_events;
 /// erc721 metadata
 pub mod erc721_metadata;
 /// erc721 transfers
@@ -87,6 +89,7 @@ pub use erc20_balances::*;
 pub use erc20_metadata::*;
 pub use erc20_supplies::*;
 pub use erc20_transfers::*;
+pub use erc20_wrapper_events::*;
 pub use erc721_metadata::*;
 pub use erc721_transfers::*;
 pub use eth_calls::*;

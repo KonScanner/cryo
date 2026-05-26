@@ -40,10 +40,20 @@ pub const MULTICALL3_ADDRESS: Address = address!("cA11bde05977b3631167028862bE2a
 
 /// Default batch size when the caller doesn't specify one.
 ///
-/// Matches the upstream Python tooling default (`batch_size=150`). For datasets
-/// whose inner calls are expensive (e.g. on-chain SVG `tokenURI`) override via
+/// **Cap on inner eth_calls per Multicall3 transaction** (see the chunking
+/// rule in [`multicall_collect_by_block`] — row count is divided by
+/// `calls_per_row` so this is the actual inner-call ceiling, not a row
+/// ceiling). At 250 calls × ~5k gas per balanceOf-shape inner = ~1.25M gas,
+/// well under the 30M block-gas cap on mainnet + every mainstream L2.
+///
+/// Bumped from upstream's 150 to 250 (modest +66% to reduce multicall count
+/// without triggering server-side timeouts at scale). Empirically 1000-batch
+/// regressed against real RPCs at 1.9M-call workloads — the halving fallback
+/// in [`multicall_batch_with_fallback`] kicked in and dragged wall-clock past
+/// the smaller-batch baseline. Datasets with expensive inner calls
+/// (on-chain SVG `tokenURI`, multi-statement state queries) override via
 /// [`MulticallBatchable::default_multicall_batch_size`].
-pub const DEFAULT_MULTICALL_BATCH_SIZE: u32 = 150;
+pub const DEFAULT_MULTICALL_BATCH_SIZE: u32 = 250;
 
 sol! {
     /// Minimal Multicall3 binding — `aggregate3` is the only function cryo needs.
@@ -251,8 +261,33 @@ where
 
     // Spawn one task per (block, batch) of multicall-eligible rows.
     if let Some(info) = mc {
+        // `multicall_batch_size` is the cap on **inner eth_calls per Multicall3 tx**,
+        // not on rows. Datasets like `erc20_metadata` produce 3 inner calls per row
+        // (name + symbol + decimals), so at batch_size=300 we want ~100 rows per
+        // multicall — not 300. Divide by the row's call count, taking a peek at the
+        // first row in the block (each row's call count is constant per dataset for
+        // every dataset in cryo today). Floor at 1 row per multicall.
+        //
+        // Pre-fix this code chunked by `batch_size` rows directly. At batch_size=300
+        // that meant 900 inner calls per multicall for metadata vs 300 for supplies
+        // — 3× larger gas + payload, 3× the server-side EVM work per RTT, ~6× the
+        // total wall-clock on a 700-contract scan (8s vs 1.3s in cdc-homie's smoke).
+        let calls_per_row_by_block: HashMap<u64, usize> = by_block
+            .iter()
+            .map(|(block, params)| {
+                let calls_per_row = params
+                    .first()
+                    .map(|p| {
+                        D::calls_for_row(p, require_success).map(|cs| cs.len().max(1)).unwrap_or(1)
+                    })
+                    .unwrap_or(1);
+                (*block, calls_per_row)
+            })
+            .collect();
         for (block, params_for_block) in by_block {
-            for chunk in params_for_block.chunks(batch_size) {
+            let calls_per_row = calls_per_row_by_block.get(&block).copied().unwrap_or(1);
+            let effective_rows_per_batch = (batch_size / calls_per_row).max(1);
+            for chunk in params_for_block.chunks(effective_rows_per_batch) {
                 let chunk = chunk.to_vec();
                 let sender = sender.clone();
                 let source = source.clone();

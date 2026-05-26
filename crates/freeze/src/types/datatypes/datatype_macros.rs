@@ -153,6 +153,15 @@ macro_rules! define_datatypes {
                     MultiDatatype::GethStateDiffs => {
                         GethStateDiffs::collect_by_block(partition, source, query, None).await
                     },
+                    MultiDatatype::LogEvents => {
+                        // LogEvents is the coalesced eth_getLogs path — it fetches by
+                        // block range, mirroring the per-dataset Logs / Erc20Transfers
+                        // chunking. Use the same `max(user_override, dataset_default=50)`
+                        // rule as the scalar log datasets so a single CLI flag covers both.
+                        let inner_request_size =
+                            Some(source.inner_request_size.max(Datatype::Logs.default_inner_request_size()));
+                        LogEvents::collect_by_block(partition, source, query, inner_request_size).await
+                    },
                     MultiDatatype::StateDiffs => {
                         StateDiffs::collect_by_block(partition, source, query, None).await
                     },
@@ -196,6 +205,12 @@ macro_rules! define_datatypes {
                         }
                         MultiDatatype::GethStateDiffs => {
                             GethStateDiffs::collect_by_transaction(partition, source, query, None).await
+                        },
+                        MultiDatatype::LogEvents => {
+                            // Per-tx path: get_transaction_logs is a single RPC call —
+                            // chunking by block-range doesn't apply, so None matches the
+                            // scalar log datasets' tx path.
+                            LogEvents::collect_by_transaction(partition, source, query, None).await
                         },
                         MultiDatatype::StateDiffs => {
                             StateDiffs::collect_by_transaction(partition, source, query, inner_request_size).await
