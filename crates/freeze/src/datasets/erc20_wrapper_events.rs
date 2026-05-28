@@ -13,10 +13,13 @@ use polars::prelude::*;
 /// that increment / decrement total supply alongside the standard ERC-20
 /// `Transfer(0x0, x, v)` / `Transfer(x, 0x0, v)` mint/burn convention.
 ///
-/// Many DeFi tokens (Compound cTokens, Aave aTokens — partially, MakerDAO
-/// DSToken, generic ERC-4626 wrappers) reuse the same event signatures, so
-/// indexing at the event-sig level catches them all without per-contract
-/// configuration.
+/// Tokens beyond canonical WETH that emit these exact one-arg signatures —
+/// WETH9 forks and WETH-style wrapped-native tokens across L2s — are caught
+/// too, since indexing happens at the event-signature level with no
+/// per-contract configuration. This does **not** include ERC-4626 vaults:
+/// their `Deposit(sender, owner, assets, shares)` /
+/// `Withdraw(sender, receiver, owner, assets, shares)` events are
+/// multi-argument and hash to different topic0s, so they are not matched here.
 #[cryo_to_df::to_df(Datatype::Erc20WrapperEvents)]
 #[derive(Default)]
 pub struct Erc20WrapperEvents {
@@ -124,9 +127,12 @@ fn is_wrapper_event_shape(log: &Log) -> bool {
     log.topics().len() == 2 && log.data().data.len() == 32
 }
 
-/// Per-transaction path: also verifies topic0 since this isn't pre-filtered
-/// by `eth_getLogs` (we got *all* tx logs and need to pick out the wrapper ones).
-fn is_wrapper_event(log: &Log) -> bool {
+/// True iff `log` is a wrapper Deposit/Withdrawal: the shape check plus a topic0
+/// match. The per-transaction path needs the topic0 check because (unlike the
+/// by-block path) `eth_getLogs` didn't pre-filter the signature — we got *all*
+/// tx logs and must pick out the wrapper ones. Shared with the coalesced
+/// [`crate::LogEvents`] extractor's by-transaction fan-out.
+pub(crate) fn is_wrapper_event(log: &Log) -> bool {
     is_wrapper_event_shape(log) &&
         log.topics().first().is_some_and(|t| {
             *t == ERC20Wrapper::Deposit::SIGNATURE_HASH ||
@@ -167,12 +173,7 @@ fn process_wrapper_events(
             store!(schema, columns, event_type, event_type.to_string());
             // topics[1] is the indexed `address` (padded to 32 bytes — low 20 are the address).
             store!(schema, columns, account, log.topics()[1][12..].to_vec());
-            store!(
-                schema,
-                columns,
-                value,
-                U256::from_be_slice(log.data().data.to_vec().as_slice())
-            );
+            store!(schema, columns, value, U256::from_be_slice(&log.data().data));
         }
     }
     Ok(())

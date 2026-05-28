@@ -99,10 +99,14 @@ impl CollectByTransaction for Erc721Transfers {
     }
 }
 
-fn is_erc721_transfer(log: &Log) -> bool {
+/// True iff `log` has the ERC-721 `Transfer` shape: Transfer signature, 4 topics
+/// (sig + indexed from + indexed to + indexed tokenId), and empty data. Shares
+/// the ERC-20 Transfer signature hash — the topic count is what distinguishes
+/// them. Shared with the coalesced [`crate::LogEvents`] extractor's by-tx fan-out.
+pub(crate) fn is_erc721_transfer(log: &Log) -> bool {
     log.topics().len() == 4 &&
         log.data().data.is_empty() &&
-        log.topics()[0] == ERC721::Transfer::SIGNATURE_HASH
+        log.topics().first().is_some_and(|t| *t == ERC721::Transfer::SIGNATURE_HASH)
 }
 
 /// process block into columns

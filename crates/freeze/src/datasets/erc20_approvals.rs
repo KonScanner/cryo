@@ -98,10 +98,13 @@ impl CollectByTransaction for Erc20Approvals {
     }
 }
 
-fn is_erc20_approval(log: &Log) -> bool {
+/// True iff `log` has the ERC-20 `Approval` shape: Approval signature, 3 topics
+/// (sig + indexed owner + indexed spender), and a 32-byte value. Shared with
+/// the coalesced [`crate::LogEvents`] extractor's by-transaction fan-out.
+pub(crate) fn is_erc20_approval(log: &Log) -> bool {
     log.topics().len() == 3 &&
         log.data().data.len() == 32 &&
-        log.topics()[0] == ERC20::Approval::SIGNATURE_HASH
+        log.topics().first().is_some_and(|t| *t == ERC20::Approval::SIGNATURE_HASH)
 }
 
 fn process_erc20_approval(logs: Vec<Log>, columns: &mut Erc20Approvals, schema: &Table) -> R<()> {
@@ -118,12 +121,7 @@ fn process_erc20_approval(logs: Vec<Log>, columns: &mut Erc20Approvals, schema: 
             store!(schema, columns, erc20, log.address().to_vec());
             store!(schema, columns, from_address, log.topics()[1][12..].to_vec());
             store!(schema, columns, to_address, log.topics()[2][12..].to_vec());
-            store!(
-                schema,
-                columns,
-                value,
-                U256::from_be_slice(log.data().data.to_vec().as_slice())
-            );
+            store!(schema, columns, value, U256::from_be_slice(&log.data().data));
         }
     }
     Ok(())

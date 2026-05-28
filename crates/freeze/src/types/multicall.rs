@@ -40,11 +40,15 @@ pub const MULTICALL3_ADDRESS: Address = address!("cA11bde05977b3631167028862bE2a
 
 /// Default batch size when the caller doesn't specify one.
 ///
-/// **Cap on inner eth_calls per Multicall3 transaction** (see the chunking
-/// rule in [`multicall_collect_by_block`] — row count is divided by
-/// `calls_per_row` so this is the actual inner-call ceiling, not a row
-/// ceiling). At 250 calls × ~5k gas per balanceOf-shape inner = ~1.25M gas,
-/// well under the 30M block-gas cap on mainnet + every mainstream L2.
+/// **Best-effort cap on inner eth_calls per Multicall3 transaction** (see
+/// [`rows_per_batch`] — row count is divided by `calls_per_row`, so this caps
+/// inner calls rather than rows). The cap is best-effort: a single row is never
+/// split, so a dataset whose `calls_per_row` exceeds `batch_size` still ships
+/// one whole row per multicall (i.e. `calls_per_row` inner calls). No dataset
+/// in cryo today approaches that — the max is `erc20_metadata` at 3 — so the
+/// cap holds in practice. At 250 calls × ~5k gas per balanceOf-shape inner =
+/// ~1.25M gas, well under the 30M block-gas cap on mainnet + every mainstream
+/// L2.
 ///
 /// Bumped from upstream's 150 to 250 (modest +66% to reduce multicall count
 /// without triggering server-side timeouts at scale). Empirically 1000-batch
@@ -54,6 +58,18 @@ pub const MULTICALL3_ADDRESS: Address = address!("cA11bde05977b3631167028862bE2a
 /// (on-chain SVG `tokenURI`, multi-statement state queries) override via
 /// [`MulticallBatchable::default_multicall_batch_size`].
 pub const DEFAULT_MULTICALL_BATCH_SIZE: u32 = 250;
+
+/// Rows per Multicall3 batch, given the inner-call budget and per-row call count.
+///
+/// `batch_size` caps inner eth_calls per multicall; dividing by `calls_per_row`
+/// converts that budget into a row count. Floored at 1 so that (a) a dataset
+/// whose `calls_per_row` exceeds `batch_size` still makes progress — one whole
+/// row per multicall — and (b) `slice::chunks`, which panics on a zero chunk
+/// size, is never handed 0. `calls_per_row` is itself floored at 1 to keep the
+/// division total even if a caller passes 0.
+fn rows_per_batch(batch_size: usize, calls_per_row: usize) -> usize {
+    (batch_size / calls_per_row.max(1)).max(1)
+}
 
 sol! {
     /// Minimal Multicall3 binding — `aggregate3` is the only function cryo needs.
@@ -264,29 +280,24 @@ where
         // `multicall_batch_size` is the cap on **inner eth_calls per Multicall3 tx**,
         // not on rows. Datasets like `erc20_metadata` produce 3 inner calls per row
         // (name + symbol + decimals), so at batch_size=300 we want ~100 rows per
-        // multicall — not 300. Divide by the row's call count, taking a peek at the
+        // multicall — not 300. We divide by the row's call count, peeking at the
         // first row in the block (each row's call count is constant per dataset for
-        // every dataset in cryo today). Floor at 1 row per multicall.
+        // every dataset in cryo today). See [`rows_per_batch`] for the floor-at-1 rule.
         //
         // Pre-fix this code chunked by `batch_size` rows directly. At batch_size=300
         // that meant 900 inner calls per multicall for metadata vs 300 for supplies
         // — 3× larger gas + payload, 3× the server-side EVM work per RTT, ~6× the
         // total wall-clock on a 700-contract scan (8s vs 1.3s in cdc-homie's smoke).
-        let calls_per_row_by_block: HashMap<u64, usize> = by_block
-            .iter()
-            .map(|(block, params)| {
-                let calls_per_row = params
-                    .first()
-                    .map(|p| {
-                        D::calls_for_row(p, require_success).map(|cs| cs.len().max(1)).unwrap_or(1)
-                    })
-                    .unwrap_or(1);
-                (*block, calls_per_row)
-            })
-            .collect();
         for (block, params_for_block) in by_block {
-            let calls_per_row = calls_per_row_by_block.get(&block).copied().unwrap_or(1);
-            let effective_rows_per_batch = (batch_size / calls_per_row).max(1);
+            // `calls_per_row` is dataset-constant; deriving it from this block's
+            // first row inside the loop avoids the prior pre-pass HashMap.
+            let calls_per_row = params_for_block
+                .first()
+                .map(|p| {
+                    D::calls_for_row(p, require_success).map(|cs| cs.len().max(1)).unwrap_or(1)
+                })
+                .unwrap_or(1);
+            let effective_rows_per_batch = rows_per_batch(batch_size, calls_per_row);
             for chunk in params_for_block.chunks(effective_rows_per_batch) {
                 let chunk = chunk.to_vec();
                 let sender = sender.clone();
@@ -425,4 +436,33 @@ where
         idx += n;
     }
     Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::rows_per_batch;
+
+    #[test]
+    fn divides_inner_call_budget_by_calls_per_row() {
+        // 250-inner-call budget, 3 calls/row (erc20_metadata) ⇒ 83 rows (83×3 = 249 ≤ 250).
+        assert_eq!(rows_per_batch(250, 3), 83);
+        // 1 call/row (supplies / balances) ⇒ the whole budget as rows.
+        assert_eq!(rows_per_batch(250, 1), 250);
+        // exact division.
+        assert_eq!(rows_per_batch(300, 3), 100);
+    }
+
+    #[test]
+    fn floors_at_one_row() {
+        // calls_per_row > batch_size ⇒ one whole row per multicall (never 0,
+        // which would panic `slice::chunks`).
+        assert_eq!(rows_per_batch(2, 3), 1);
+        assert_eq!(rows_per_batch(1, 250), 1);
+    }
+
+    #[test]
+    fn guards_zero_calls_per_row() {
+        // Defensive: a 0 `calls_per_row` must not divide-by-zero.
+        assert_eq!(rows_per_batch(250, 0), 250);
+    }
 }
