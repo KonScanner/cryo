@@ -1,4 +1,4 @@
-# Pinned toolchain for the cryo_python extension crate.
+# Pinned toolchain for the triodion-py extension crate.
 #
 # Read by rustup (and by cargo via rustup's proxy): every cargo invocation
 # from this directory or below auto-installs and uses this toolchain.
@@ -6,13 +6,13 @@
 # the same rustc/cargo, removing "works on my machine" drift.
 #
 # Why 1.95.0:
-#   - Several transitive deps in vendor/cryo's Cargo.lock have bumped their
-#     MSRV beyond cryo's nominal 1.85: ruint 1.18 needs 1.90, nybbles 0.4.8
+#   - Several transitive deps in the workspace Cargo.lock have bumped their
+#     MSRV beyond triodion's nominal 1.85: ruint 1.18 needs 1.90, nybbles 0.4.8
 #     / serde_with 3.20 / simd-json 0.17 need 1.88. A 1.85.0 pin no longer
 #     compiles the workspace. 1.95.0 is the current stable as of May 2026
 #     and satisfies every dep's MSRV.
-#   - Cargo 1.84+ resolver = "3" is required by the parent cryo workspace
-#     (vendor/cryo/Cargo.toml line 16); 1.95.0 satisfies that.
+#   - Cargo 1.84+ resolver = "3" is required by the parent triodion workspace
+#     (the workspace Cargo.toml); 1.95.0 satisfies that.
 #   - Match the Dockerfile's RUST_VERSION pin. When bumping either, bump
 #     both — Docker builds and local builds must stay in lockstep.
 #

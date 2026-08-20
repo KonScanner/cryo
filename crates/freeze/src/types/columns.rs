@@ -39,7 +39,7 @@ pub trait ColumnData: Default + crate::Dataset {
                 let columns = Self::column_types();
                 for name in ["block_number", "transaction_index", "log_index"] {
                     if (name == "transaction_index") & columns.contains_key("log_index") {
-                        continue
+                        continue;
                     }
                     if columns.contains_key(name) {
                         sort.push(name.to_string())
@@ -107,7 +107,7 @@ pub trait Dataset: Sync + Send {
     ///
     /// Only consulted when [`Self::use_block_ranges`] is `true`. Log-shaped
     /// datasets (logs, erc20_transfers, erc721_transfers, erc20_approvals)
-    /// override this so a fresh `cryo …` invocation issues a sensible number
+    /// override this so a fresh `triodion …` invocation issues a sensible number
     /// of `eth_getLogs` requests instead of one per block. The user's explicit
     /// `--inner-request-size N` still wins via `max(user, dataset_default)`
     /// in the central dispatcher.

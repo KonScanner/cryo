@@ -8,7 +8,7 @@ use alloy::{
 use polars::prelude::*;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::Traces)]
+#[triodion_macros::to_df(Datatype::Traces)]
 #[derive(Default)]
 pub struct Traces {
     n_rows: u64,
@@ -295,7 +295,7 @@ pub(crate) fn filter_failed_traces(
             if trace.trace.trace_address.len() >= e_address.len() &&
                 trace.trace.trace_address[0..e_address.len()] == e_address[..]
             {
-                continue
+                continue;
             } else {
                 error_address = None;
             }

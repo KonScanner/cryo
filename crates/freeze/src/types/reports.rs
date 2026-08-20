@@ -8,7 +8,7 @@ use std::{
 
 #[derive(serde::Serialize, Debug)]
 struct FreezeReport {
-    cryo_version: String,
+    triodion_version: String,
     // node_client: String,
     cli_command: Option<Vec<String>>,
     results: Option<SerializedFreezeSummary>,
@@ -30,7 +30,7 @@ pub(crate) fn get_report_path(
     // create directory
     let report_dir = match &env.report_dir {
         Some(report_dir) => Path::new(&report_dir).into(),
-        None => Path::new(&sink.output_dir).join(".cryo/reports"),
+        None => Path::new(&sink.output_dir).join(".triodion/reports"),
     };
     std::fs::create_dir_all(&report_dir)
         .map_err(|_| CollectError::CollectError("could not create report dir".to_string()))?;
@@ -55,13 +55,13 @@ pub(crate) fn write_report(
     freeze_summary: Option<&FreezeSummary>,
 ) -> Result<PathBuf, CollectError> {
     // determine version
-    let cryo_version = CRYO_VERSION.to_string();
+    let triodion_version = TRIODION_VERSION.to_string();
     let serialized_summary = match freeze_summary {
         Some(x) => Some(serialize_summary(x, query, sink)?),
         None => None,
     };
     let report = FreezeReport {
-        cryo_version,
+        triodion_version,
         cli_command: env.cli_command.clone(),
         args: env.args.clone(),
         results: serialized_summary,
@@ -126,5 +126,5 @@ fn serialize_summary(
     })
 }
 
-/// cryo version
-pub const CRYO_VERSION: &str = env!("GIT_DESCRIPTION");
+/// triodion version
+pub const TRIODION_VERSION: &str = env!("GIT_DESCRIPTION");

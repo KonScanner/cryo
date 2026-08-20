@@ -7,7 +7,7 @@ use polars::prelude::*;
 use std::collections::HashMap;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::EthCalls)]
+#[triodion_macros::to_df(Datatype::EthCalls)]
 #[derive(Default)]
 pub struct EthCalls {
     n_rows: u64,

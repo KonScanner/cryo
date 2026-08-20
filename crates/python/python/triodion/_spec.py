@@ -20,7 +20,7 @@ if typing.TYPE_CHECKING:
         Literal['dict'],
     ]
 
-    class CryoCliArgs(TypedDict, total=False):
+    class TriodionCliArgs(TypedDict, total=False):
         datatypes: typing.Sequence[Datatype]
         blocks: typing.Sequence[str] | None
         align: bool

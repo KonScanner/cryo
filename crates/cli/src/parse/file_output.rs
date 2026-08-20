@@ -1,8 +1,8 @@
 use crate::args::Args;
-use cryo_freeze::{FileFormat, FileOutput, ParseError, Source, SubDir};
 use polars::prelude::*;
 use polars_parquet::write::{BrotliLevel, GzipLevel, ZstdLevel};
 use std::fs;
+use triodion_core::{FileFormat, FileOutput, ParseError, Source, SubDir};
 
 pub(crate) fn parse_file_output(args: &Args, source: &Source) -> Result<FileOutput, ParseError> {
     // process output directory

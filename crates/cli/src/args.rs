@@ -8,9 +8,9 @@ use std::{default::Default, path::PathBuf};
 /// Command line arguments
 #[derive(Parser, Debug, Serialize, Deserialize, Clone, Default)]
 #[command(
-    name = "cryo",
+    name = "triodion",
     author,
-    version = cryo_freeze::CRYO_VERSION,
+    version = triodion_core::TRIODION_VERSION,
     about = &get_about_str(),
     long_about = None,
     styles=get_styles(),
@@ -200,7 +200,7 @@ pub struct Args {
     pub compression: Vec<String>,
 
     /// Directory to save summary report
-    /// [default: {output_dir}/.cryo/reports]
+    /// [default: {output_dir}/.triodion/reports]
     #[arg(long, help_heading = "Output Options", verbatim_doc_comment)]
     pub report_dir: Option<PathBuf>,
 
@@ -359,18 +359,20 @@ pub(crate) fn get_styles() -> clap_cryo::builder::Styles {
 }
 
 fn get_about_str() -> String {
-    cstr!(r#"<white><bold>cryo</bold></white> extracts blockchain data to parquet, csv, or json"#)
-        .to_string()
+    cstr!(
+        r#"<white><bold>triodion</bold></white> extracts blockchain data to parquet, csv, or json"#
+    )
+    .to_string()
 }
 
 fn get_after_str() -> String {
     let header = "Optional Subcommands:".truecolor(0, 225, 0).bold().to_string();
     let subcommands = cstr!(
         r#"
-      <white><bold>cryo help</bold></white>                      display help message
-      <white><bold>cryo help syntax</bold></white>               display block + tx specification syntax
-      <white><bold>cryo help datasets</bold></white>             display list of all datasets
-      <white><bold>cryo help</bold></white>"#
+      <white><bold>triodion help</bold></white>                      display help message
+      <white><bold>triodion help syntax</bold></white>               display block + tx specification syntax
+      <white><bold>triodion help datasets</bold></white>             display list of all datasets
+      <white><bold>triodion help</bold></white>"#
     );
     let post_subcommands = " <DATASET(S)>         display info about a dataset";
     format!("{}{}{}", header, subcommands, post_subcommands)
@@ -378,6 +380,6 @@ fn get_after_str() -> String {
 
 fn get_datatype_help() -> &'static str {
     cstr!(
-        r#"datatype(s) to collect, use <white><bold>cryo datasets</bold></white> to see all available"#
+        r#"datatype(s) to collect, use <white><bold>triodion datasets</bold></white> to see all available"#
     )
 }

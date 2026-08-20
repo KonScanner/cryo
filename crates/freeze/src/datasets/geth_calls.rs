@@ -4,7 +4,7 @@ use alloy::{primitives::U256, rpc::types::trace::geth::CallFrame};
 use polars::prelude::*;
 
 /// columns for geth traces
-#[cryo_to_df::to_df(Datatype::GethCalls)]
+#[triodion_macros::to_df(Datatype::GethCalls)]
 #[derive(Default)]
 pub struct GethCalls {
     n_rows: u64,

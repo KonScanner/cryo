@@ -5,7 +5,7 @@ use pyo3::{
     IntoPyObjectExt,
 };
 
-use cryo_cli::{run, Args};
+use triodion_cli::{run, Args};
 
 #[pyfunction(
     signature = (
@@ -231,7 +231,7 @@ pub fn _freeze(
 
 fn freeze_command(py: Python<'_>, command: String) -> PyResult<Bound<'_, PyAny>> {
     pyo3_async_runtimes::tokio::future_into_py(py, async move {
-        let args = cryo_cli::parse_str(command.as_str()).await.expect("could not parse inputs");
+        let args = triodion_cli::parse_str(command.as_str()).await.expect("could not parse inputs");
         match run(args).await {
             Ok(Some(result)) => Python::attach(|py| {
                 let dict = [

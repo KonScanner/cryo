@@ -12,8 +12,8 @@ def parse_cli_args(
     start_block: _spec.BlockReference | None = None,
     end_block: _spec.BlockReference | None = None,
     file_format: _spec.FileFormat = 'parquet',
-    **kwargs: Unpack[_spec.CryoCliArgs],
-) -> _spec.CryoCliArgs:
+    **kwargs: Unpack[_spec.TriodionCliArgs],
+) -> _spec.TriodionCliArgs:
     """
     TODO: write this part in rust
     """

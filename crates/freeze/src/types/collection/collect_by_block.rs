@@ -10,7 +10,7 @@ type R<T> = ::core::result::Result<T, CollectError>;
 ///
 /// Uses native AFIT (return-position `impl Future + Send`) instead of
 /// `#[async_trait]` to avoid the per-method `Box<dyn Future>` allocation.
-/// `Send` bounds are explicit because cryo's runtime `tokio::spawn`'s the
+/// `Send` bounds are explicit because triodion's runtime `tokio::spawn`'s the
 /// futures across worker threads — they must be `Send`.
 ///
 /// Impl blocks can still use the natural `async fn extract(...) -> R<Resp>`

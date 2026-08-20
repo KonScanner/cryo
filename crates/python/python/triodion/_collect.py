@@ -18,7 +18,7 @@ if typing.TYPE_CHECKING:
 async def async_collect(
     datatype: _spec.Datatype,
     output_format: Literal['polars'] = 'polars',
-    **kwargs: Unpack[_spec.CryoCliArgs],
+    **kwargs: Unpack[_spec.TriodionCliArgs],
 ) -> pl.DataFrame:
     ...
 
@@ -27,7 +27,7 @@ async def async_collect(
 async def async_collect(
     datatype: _spec.Datatype,
     output_format: Literal['pandas'],
-    **kwargs: Unpack[_spec.CryoCliArgs],
+    **kwargs: Unpack[_spec.TriodionCliArgs],
 ) -> pd.DataFrame:
     ...
 
@@ -36,7 +36,7 @@ async def async_collect(
 async def async_collect(
     datatype: _spec.Datatype,
     output_format: Literal['list'],
-    **kwargs: Unpack[_spec.CryoCliArgs],
+    **kwargs: Unpack[_spec.TriodionCliArgs],
 ) -> ListOfDicts:
     ...
 
@@ -45,7 +45,7 @@ async def async_collect(
 async def async_collect(
     datatype: _spec.Datatype,
     output_format: Literal['dict'],
-    **kwargs: Unpack[_spec.CryoCliArgs],
+    **kwargs: Unpack[_spec.TriodionCliArgs],
 ) -> DictOfLists:
     ...
 
@@ -53,12 +53,12 @@ async def async_collect(
 async def async_collect(
     datatype: _spec.Datatype,
     output_format: _spec.PythonOutput = 'polars',
-    **kwargs: Unpack[_spec.CryoCliArgs],
+    **kwargs: Unpack[_spec.TriodionCliArgs],
 ) -> pl.DataFrame | pd.DataFrame | ListOfDicts | DictOfLists:
     """asynchronously collect data and return as dataframe"""
 
     from . import _args
-    from . import _cryo_rust  # type: ignore
+    from . import _triodion_rust  # type: ignore
 
     # parse inputs
     cli_args = _args.parse_cli_args(**kwargs)
@@ -67,7 +67,7 @@ async def async_collect(
     cli_args['chunk_size'] = 20_000_000
 
     # collect data
-    result: pl.DataFrame = await _cryo_rust._collect(datatype, **cli_args)
+    result: pl.DataFrame = await _triodion_rust._collect(datatype, **cli_args)
 
     # format output
     if output_format == 'polars':
@@ -86,7 +86,7 @@ async def async_collect(
 def collect(
     datatype: _spec.Datatype,
     output_format: Literal['polars'] = 'polars',
-    **kwargs: Unpack[_spec.CryoCliArgs],
+    **kwargs: Unpack[_spec.TriodionCliArgs],
 ) -> pl.DataFrame:
     ...
 
@@ -95,7 +95,7 @@ def collect(
 def collect(
     datatype: _spec.Datatype,
     output_format: Literal['pandas'],
-    **kwargs: Unpack[_spec.CryoCliArgs],
+    **kwargs: Unpack[_spec.TriodionCliArgs],
 ) -> pd.DataFrame:
     ...
 
@@ -104,7 +104,7 @@ def collect(
 def collect(
     datatype: _spec.Datatype,
     output_format: Literal['list'],
-    **kwargs: Unpack[_spec.CryoCliArgs],
+    **kwargs: Unpack[_spec.TriodionCliArgs],
 ) -> ListOfDicts:
     ...
 
@@ -113,7 +113,7 @@ def collect(
 def collect(
     datatype: _spec.Datatype,
     output_format: Literal['dict'],
-    **kwargs: Unpack[_spec.CryoCliArgs],
+    **kwargs: Unpack[_spec.TriodionCliArgs],
 ) -> DictOfLists:
     ...
 
@@ -121,7 +121,7 @@ def collect(
 def collect(
     datatype: _spec.Datatype,
     output_format: _spec.PythonOutput = 'polars',
-    **kwargs: Unpack[_spec.CryoCliArgs],
+    **kwargs: Unpack[_spec.TriodionCliArgs],
 ) -> pl.DataFrame | pd.DataFrame | ListOfDicts | DictOfLists:
     """collect data and return as dataframe"""
 

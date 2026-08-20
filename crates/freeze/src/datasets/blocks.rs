@@ -6,7 +6,7 @@ use alloy::{
 use polars::prelude::*;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::Blocks)]
+#[triodion_macros::to_df(Datatype::Blocks)]
 #[derive(Default)]
 pub struct Blocks {
     n_rows: u64,

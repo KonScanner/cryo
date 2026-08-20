@@ -1,4 +1,4 @@
-//! cryo_cli is a cli for cryo_freeze
+//! triodion_cli is a cli for triodion_core
 
 use clap_cryo::Parser;
 
@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
             // handle debug build
             #[cfg(debug_assertions)]
             {
-                return Err(eyre::Report::from(e))
+                return Err(eyre::Report::from(e));
             }
 
             // handle release build

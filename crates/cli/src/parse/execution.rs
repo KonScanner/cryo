@@ -1,5 +1,5 @@
 use crate::args::Args;
-use cryo_freeze::{ExecutionEnv, ExecutionEnvBuilder, ParseError};
+use triodion_core::{ExecutionEnv, ExecutionEnvBuilder, ParseError};
 
 pub(crate) fn parse_execution_env(args: &Args, n_tasks: u64) -> Result<ExecutionEnv, ParseError> {
     let args_str =

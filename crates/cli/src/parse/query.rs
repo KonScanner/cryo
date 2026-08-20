@@ -1,7 +1,7 @@
 use super::{parse_schemas, partitions};
 use crate::args::Args;
-use cryo_freeze::{Dim, ParseError, Query, QueryLabels, Schemas, Source};
 use std::sync::Arc;
+use triodion_core::{Dim, ParseError, Query, QueryLabels, Schemas, Source};
 
 /// parse Query struct from cli Args
 pub async fn parse_query(args: &Args, source: Arc<Source>) -> Result<Query, ParseError> {
@@ -14,7 +14,7 @@ pub async fn parse_query(args: &Args, source: Arc<Source>) -> Result<Query, Pars
 
     let (partitions, partitioned_by, time_dimension) =
         partitions::parse_partitions(args, source, &schemas).await?;
-    let datatypes = cryo_freeze::cluster_datatypes(datatypes);
+    let datatypes = triodion_core::cluster_datatypes(datatypes);
     let labels = QueryLabels { align: args.align, reorg_buffer: args.reorg_buffer };
     Ok(Query {
         datatypes,
@@ -37,7 +37,7 @@ fn find_arg_aliases(args: &Args, schemas: &Schemas) -> Vec<(Dim, Dim)> {
     for datatype in schemas.keys() {
         let aliases = datatype.arg_aliases();
         if aliases.is_empty() {
-            continue
+            continue;
         }
         for dim in
             datatype.required_parameters().iter().chain(datatype.optional_parameters().iter())

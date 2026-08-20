@@ -1,4 +1,4 @@
-//! cryo_freeze extracts EVM data to parquet, csv, or json
+//! triodion_core extracts EVM data to parquet, csv, or json
 
 #![warn(missing_docs, unreachable_pub, unused_crate_dependencies)]
 #![deny(unused_must_use, rust_2018_idioms)]

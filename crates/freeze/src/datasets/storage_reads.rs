@@ -4,7 +4,7 @@ use polars::prelude::*;
 use std::collections::BTreeMap;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::StorageReads)]
+#[triodion_macros::to_df(Datatype::StorageReads)]
 #[derive(Default)]
 pub struct StorageReads {
     pub(crate) n_rows: u64,

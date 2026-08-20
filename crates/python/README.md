@@ -1,5 +1,15 @@
 
-# ❄️🧊 cryo 🧊❄️ for python
+# triodion for python
 
-see full [README](https://github.com/KonScanner/cryo?tab=readme-ov-file#installing-cryo_python-from-pypi) for details
+The Python bindings for [triodion](https://github.com/KonScanner/triodion).
 
+```bash
+pip install triodion
+```
+
+```python
+import triodion
+```
+
+See the full [README](https://github.com/KonScanner/triodion?tab=readme-ov-file#python-installation)
+for details.

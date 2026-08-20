@@ -1,5 +1,5 @@
-use cryo_freeze::ParseError;
 use std::collections::HashMap;
+use triodion_core::ParseError;
 
 pub(crate) fn hex_string_to_binary(hex_string: &str) -> Result<Vec<u8>, ParseError> {
     let hex_string = hex_string.strip_prefix("0x").unwrap_or(hex_string);
@@ -62,7 +62,7 @@ pub(crate) fn parse_binary_arg(
     // files columns
     for path in files {
         let reference = parse_file_column_reference(path, default_column)?;
-        let values = cryo_freeze::read_binary_column(&reference.path, &reference.column)
+        let values = triodion_core::read_binary_column(&reference.path, &reference.column)
             .map_err(|_e| ParseError::ParseError("could not read input".to_string()))?;
         let key = BinaryInputList::ParquetColumn(reference.path, reference.column);
         parsed.insert(key, values);
@@ -92,7 +92,7 @@ fn parse_file_column_reference(
         if pieces.len() == 2 {
             (pieces[0], pieces[1])
         } else {
-            return Err(ParseError::ParseError("could not parse path column".to_string()))
+            return Err(ParseError::ParseError("could not parse path column".to_string()));
         }
     } else {
         (path, default_column)

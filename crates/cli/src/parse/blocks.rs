@@ -1,7 +1,7 @@
 use polars::prelude::*;
 use std::collections::HashMap;
 
-use cryo_freeze::{BlockChunk, ChunkData, Datatype, ParseError, Source, Subchunk, Table};
+use triodion_core::{BlockChunk, ChunkData, Datatype, ParseError, Source, Subchunk, Table};
 
 use crate::args::Args;
 
@@ -421,7 +421,7 @@ mod tests {
             inner_request_size: 1,
             max_concurrent_chunks: None,
             rpc_url: "".to_string(),
-            labels: cryo_freeze::SourceLabels::default(),
+            labels: triodion_core::SourceLabels::default(),
             l1_provider: None,
             l1_chain_id: None,
             l1_rpc_url: None,
@@ -490,7 +490,7 @@ mod tests {
             semaphore: Arc::new(None),
             max_concurrent_chunks: Some(1),
             rate_limiter: Arc::new(None),
-            labels: cryo_freeze::SourceLabels::default(),
+            labels: triodion_core::SourceLabels::default(),
             l1_provider: None,
             l1_chain_id: None,
             l1_rpc_url: None,
@@ -570,7 +570,7 @@ mod tests {
             inner_request_size: 1,
             max_concurrent_chunks: Some(1),
             rpc_url: "".to_string(),
-            labels: cryo_freeze::SourceLabels::default(),
+            labels: triodion_core::SourceLabels::default(),
             l1_provider: None,
             l1_chain_id: None,
             l1_rpc_url: None,

@@ -7,7 +7,7 @@ use alloy::{
 use polars::prelude::*;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::Contracts)]
+#[triodion_macros::to_df(Datatype::Contracts)]
 #[derive(Default)]
 pub struct Contracts {
     n_rows: u64,

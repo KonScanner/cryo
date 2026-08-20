@@ -3,7 +3,7 @@ use polars::prelude::*;
 use std::collections::BTreeMap;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::FourByteCounts)]
+#[triodion_macros::to_df(Datatype::FourByteCounts)]
 #[derive(Default)]
 pub struct FourByteCounts {
     pub(crate) n_rows: u64,
@@ -82,7 +82,7 @@ pub(crate) fn process_storage_reads(
 fn parse_signature_size(signature_size: &str) -> R<(Vec<u8>, u64)> {
     let parts: Vec<&str> = signature_size.splitn(2, '-').collect();
     if parts.len() != 2 {
-        return Err(err("could not parse 4byte-size pair"))
+        return Err(err("could not parse 4byte-size pair"));
     }
 
     // Parse the hexadecimal part (assuming there's no "0x" prefix as in the example given)

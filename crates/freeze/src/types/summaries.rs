@@ -32,7 +32,7 @@ pub struct FreezeSummary {
 
 /// print all datasets
 pub fn print_all_datasets() {
-    print_header("cryo datasets");
+    print_header("triodion datasets");
     for datatype in Datatype::all().iter() {
         let aliases = datatype.aliases();
         if aliases.len() > 1 {
@@ -58,7 +58,10 @@ pub fn print_all_datasets() {
         print_bullet(name, subtypes)
     }
     println!();
-    println!("use {} to print info about a specific dataset", "cryo help <DATASET>".bold().white())
+    println!(
+        "use {} to print info about a specific dataset",
+        "triodion help <DATASET>".bold().white()
+    )
 }
 
 /// print info about datasets
@@ -153,15 +156,15 @@ fn print_bullet_indent<A: AsRef<str>, B: AsRef<str>>(key: A, value: B, indent: u
     println!("{}{}{}{}{}", " ".repeat(indent), bullet_str, key_str, colon_str, value_str);
 }
 
-pub(crate) fn print_cryo_intro(
+pub(crate) fn print_triodion_intro(
     query: &Query,
     source: &Source,
     sink: &FileOutput,
     env: &ExecutionEnv,
     n_chunks_remaining: u64,
 ) -> Result<(), CollectError> {
-    print_header("cryo parameters");
-    print_bullet("version", super::reports::CRYO_VERSION);
+    print_header("triodion parameters");
+    print_bullet("version", super::reports::TRIODION_VERSION);
     let datatype_strs: Vec<_> =
         query.datatypes.iter().flat_map(|d| d.datatypes()).map(|d| d.name()).collect();
     print_bullet("data", "");
@@ -397,7 +400,7 @@ fn print_schema(name: &Datatype, schema: &Table) {
     println!("\nother available columns: {}", other_columns);
 }
 
-pub(crate) fn print_cryo_conclusion(
+pub(crate) fn print_triodion_conclusion(
     freeze_summary: &FreezeSummary,
     query: &Query,
     env: &ExecutionEnv,
@@ -443,7 +446,7 @@ pub(crate) fn print_cryo_conclusion(
         Ok(duration) => duration,
         Err(_e) => {
             println!("error computing system time, aborting");
-            return
+            return;
         }
     };
     let seconds = duration.as_secs();
@@ -576,7 +579,7 @@ fn format_float(number: f64) -> String {
     let frac_part = (number.fract() * frac_multiplier).round() as usize;
 
     if frac_part == 0 {
-        return format!("{}.0", int_part.separate_with_commas())
+        return format!("{}.0", int_part.separate_with_commas());
     }
 
     let frac_str =

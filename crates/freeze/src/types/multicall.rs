@@ -45,7 +45,7 @@ pub const MULTICALL3_ADDRESS: Address = address!("cA11bde05977b3631167028862bE2a
 /// inner calls rather than rows). The cap is best-effort: a single row is never
 /// split, so a dataset whose `calls_per_row` exceeds `batch_size` still ships
 /// one whole row per multicall (i.e. `calls_per_row` inner calls). No dataset
-/// in cryo today approaches that — the max is `erc20_metadata` at 3 — so the
+/// in triodion today approaches that — the max is `erc20_metadata` at 3 — so the
 /// cap holds in practice. At 250 calls × ~5k gas per balanceOf-shape inner =
 /// ~1.25M gas, well under the 30M block-gas cap on mainnet + every mainstream
 /// L2.
@@ -72,7 +72,7 @@ fn rows_per_batch(batch_size: usize, calls_per_row: usize) -> usize {
 }
 
 sol! {
-    /// Minimal Multicall3 binding — `aggregate3` is the only function cryo needs.
+    /// Minimal Multicall3 binding — `aggregate3` is the only function triodion needs.
     #[allow(missing_docs)]
     contract Multicall3 {
         struct Call3 {
@@ -282,7 +282,7 @@ where
         // (name + symbol + decimals), so at batch_size=300 we want ~100 rows per
         // multicall — not 300. We divide by the row's call count, peeking at the
         // first row in the block (each row's call count is constant per dataset for
-        // every dataset in cryo today). See [`rows_per_batch`] for the floor-at-1 rule.
+        // every dataset in triodion today). See [`rows_per_batch`] for the floor-at-1 rule.
         //
         // Pre-fix this code chunked by `batch_size` rows directly. At batch_size=300
         // that meant 900 inner calls per multicall for metadata vs 300 for supplies
@@ -425,7 +425,7 @@ where
             decoded.len(),
             total_expected,
             batch.len(),
-        )))
+        )));
     }
 
     let mut out = Vec::with_capacity(batch.len());

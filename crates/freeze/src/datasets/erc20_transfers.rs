@@ -7,7 +7,7 @@ use alloy::{
 use polars::prelude::*;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::Erc20Transfers)]
+#[triodion_macros::to_df(Datatype::Erc20Transfers)]
 #[derive(Default)]
 pub struct Erc20Transfers {
     n_rows: u64,

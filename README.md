@@ -1,21 +1,20 @@
-# ❄️🧊 cryo 🧊❄️
+# triodion
 
-[![Rust](https://github.com/KonScanner/cryo/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/KonScanner/cryo/actions/workflows/build_and_test.yml)
+[![Rust](https://github.com/KonScanner/triodion/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/KonScanner/triodion/actions/workflows/build_and_test.yml)
 
-> **Fork notice.** This is a modified fork of [paradigmxyz/cryo](https://github.com/paradigmxyz/cryo), maintained by KonScanner.
-> It is not affiliated with, nor endorsed by, Paradigm. It diverges from upstream
-> commit `559b654` (2025-01-08). See [NOTICE](NOTICE) for the statement of changes
-> required by Apache-2.0 section 4(b). Licensed MIT OR Apache-2.0, as upstream.
+> **triodion** is a modified fork of [cryo](https://github.com/paradigmxyz/cryo), originally
+> developed by Paradigm and the Cryo Contributors. It is not affiliated with, nor endorsed
+> by, Paradigm. It diverges from upstream commit `559b654` (2025-01-08) and was renamed
+> from `cryo` to `triodion` to avoid namespace collision. See [NOTICE](NOTICE) for the
+> statement of changes required by Apache-2.0 section 4(b). Licensed MIT OR Apache-2.0.
 
-`cryo` is the easiest way to extract blockchain data to parquet, csv, json, or a python dataframe.
+`triodion` is the easiest way to extract blockchain data to parquet, csv, json, or a python dataframe.
 
-`cryo` is also extremely flexible, with [many different options](#cryo-help) to control how data is extracted + filtered + formatted
+`triodion` is also extremely flexible, with [many different options](#triodion-help) to control how data is extracted + filtered + formatted
 
-*`cryo` is an early WIP, please report bugs + feedback to the issue tracker*
+*`triodion` is an early WIP, please report bugs + feedback to the issue tracker*
 
-*note that `cryo`'s default settings will slam a node too hard for use with 3rd party RPC providers. Instead, `--requests-per-second` and `--max-concurrent-requests` should be used to impose ratelimits. Such settings will be handled automatically in a future release*.
-
-to discuss cryo, check out [the telegram group](https://t.me/paradigm_data)
+*note that `triodion`'s default settings will slam a node too hard for use with 3rd party RPC providers. Instead, `--requests-per-second` and `--max-concurrent-requests` should be used to impose ratelimits. Such settings will be handled automatically in a future release*.
 
 ## Contents
 
@@ -24,46 +23,48 @@ to discuss cryo, check out [the telegram group](https://t.me/paradigm_data)
 3. [Data Schema](#data-schemas)
 4. [Code Guide](#code-guide)
 5. [Documentation](#documentation)
-    1. [Basics](#cryo-help)
-    2. [Syntax](#cryo-syntax)
-    3. [Datasets](#cryo-datasets)
+    1. [Basics](#triodion-help)
+    2. [Syntax](#triodion-syntax)
+    3. [Datasets](#triodion-datasets)
 
 ## Example Usage
 
-use as `cryo <dataset> [OPTIONS]`
+use as `triodion <dataset> [OPTIONS]`
 
 | Example | Command |
 | :- | :- |
-| Extract all logs from block 16,000,000 to block 17,000,000 | `cryo logs -b 16M:17M` |
-| Extract blocks, logs, or traces missing from current directory | `cryo blocks txs traces` |
-| Extract to csv instead of parquet | `cryo blocks txs traces --csv` |
-| Extract only certain columns | `cryo blocks --include number timestamp` |
-| Dry run to view output schemas or expected work | `cryo storage_diffs --dry` |
-| Extract all USDC events | `cryo logs --contract 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48` |
+| Extract all logs from block 16,000,000 to block 17,000,000 | `triodion logs -b 16M:17M` |
+| Extract blocks, logs, or traces missing from current directory | `triodion blocks txs traces` |
+| Extract to csv instead of parquet | `triodion blocks txs traces --csv` |
+| Extract only certain columns | `triodion blocks --include number timestamp` |
+| Dry run to view output schemas or expected work | `triodion storage_diffs --dry` |
+| Extract all USDC events | `triodion logs --contract 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48` |
 
 For a more complex example, see the [Uniswap Example](./examples/uniswap.sh).
 
-`cryo` uses `ETH_RPC_URL` env var as the data source unless `--rpc <url>` is given
+`triodion` uses `ETH_RPC_URL` env var as the data source unless `--rpc <url>` is given
 
 ## Installation
 
-The simplest way to use `cryo` is as a cli tool:
+The simplest way to use `triodion` is as a cli tool:
 
 #### Method 1: install from source
 
 ```bash
-git clone https://github.com/KonScanner/cryo
-cd cryo
+git clone https://github.com/KonScanner/triodion
+cd triodion
 cargo install --path ./crates/cli
 ```
 
 This method requires having rust installed. See [rustup](https://rustup.rs/) for instructions.
 
-#### Method 2: install from crates.io
+#### Method 2: install from git
 
 ```bash
-cargo install cryo_cli
+cargo install --git https://github.com/KonScanner/triodion triodion-cli
 ```
+
+The `triodion-*` crates are not published to crates.io. Install from git or from source.
 
 This method requires having rust installed. See [rustup](https://rustup.rs/) for instructions.
 
@@ -71,35 +72,36 @@ Make sure that `~/.cargo/bin` is on your `PATH`. One way to do this is by adding
 
 ### Python Installation
 
-`cryo` can also be installed as a python package:
+`triodion` can also be installed as a python package:
 
-#### Installing `cryo` python from pypi
+#### Installing the python package from pypi
 
 (make sure rust is installed first, see [rustup](https://www.rust-lang.org/tools/install))
 
 ```bash
 pip install maturin
-pip install cryo-konscanner
+pip install triodion
 ```
 
-The distribution name is `cryo-konscanner`, not `cryo` — plain `cryo` on PyPI is the
-upstream package. The import path is unchanged: `import cryo` still works.
+```python
+import triodion
+```
 
-#### Installing `cryo` python from source
+#### Installing the python package from source
 
 ```bash
 pip install maturin
-git clone https://github.com/KonScanner/cryo
-cd cryo/crates/python
+git clone https://github.com/KonScanner/triodion
+cd triodion/crates/python
 maturin build --release
 pip install --force-reinstall <OUTPUT_OF_MATURIN_BUILD>.whl
 ```
 
 ## Data Schemas
 
-Many `cryo` cli options will affect output schemas by adding/removing columns or changing column datatypes.
+Many `triodion` cli options will affect output schemas by adding/removing columns or changing column datatypes.
 
-`cryo` will always print out data schemas before collecting any data. To view these schemas without collecting data, use `--dry` to perform a dry run.
+`triodion` will always print out data schemas before collecting any data. To view these schemas without collecting data, use `--dry` to perform a dry run.
 
 #### Schema Design Guide
 
@@ -123,7 +125,7 @@ Standard types across tables:
 
 #### JSON-RPC
 
-`cryo` currently obtains all of its data using the [JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/) protocol standard.
+`triodion` currently obtains all of its data using the [JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/) protocol standard.
 
 |dataset|blocks per request|results per block|method|
 |-|-|-|-|
@@ -135,74 +137,76 @@ Standard types across tables:
 |State Diffs|1|multiple|`trace_replayBlockTransactions`|
 |Vm Traces|1|multiple|`trace_replayBlockTransactions`|
 
-`cryo` use [ethers.rs](https://github.com/gakonst/ethers-rs) to perform JSON-RPC requests, so it can be used any chain that ethers-rs is compatible with. This includes Ethereum, Optimism, Arbitrum, Polygon, BNB, and Avalanche.
+`triodion` uses [alloy](https://github.com/alloy-rs/alloy) to perform JSON-RPC requests, so it can be used with any chain that alloy is compatible with. This includes Ethereum, Optimism, Arbitrum, Polygon, BNB, and Avalanche.
 
-A future version of `cryo` will be able to bypass JSON-RPC and query node data directly.
+A future version of `triodion` will be able to bypass JSON-RPC and query node data directly.
 
 ## Code Guide
 - Code is arranged into the following crates:
-    - `cryo_cli`: convert textual data into cryo function calls
-    - `cryo_freeze`: core cryo code
-    - `cryo_python`: cryo python adapter
-    - `cryo_to_df`: procedural macro for generating dataset definitions
+    - `triodion-cli`: convert textual data into triodion function calls
+    - `triodion-core`: core triodion code
+    - `triodion-py`: python adapter (imported as `triodion`, distributed as `triodion`)
+    - `triodion-macros`: procedural macro for generating dataset definitions
 - Do not use panics (including `panic!`, `todo!`, `unwrap()`, and `expect()`) except in the following circumstances: tests, build scripts, lazy static blocks, and procedural macros
 
 ## Documentation
 
-1. [cryo help](#cryo-help)
-2. [cryo syntax](#cryo-syntax)
-3. [cryo datasets](#cryo-datasets)
+1. [triodion help](#triodion-help)
+2. [triodion syntax](#triodion-syntax)
+3. [triodion datasets](#triodion-datasets)
 
-#### cryo help
+#### triodion help
 
-(output of `cryo help`)
+(output of `triodion help`)
 
 ```
-cryo extracts blockchain data to parquet, csv, or json
+triodion extracts blockchain data to parquet, csv, or json
 
-Usage: cryo [OPTIONS] [DATATYPE]...
+Usage: triodion [OPTIONS] [DATATYPE]...
 
 Arguments:
-  [DATATYPE]...  datatype(s) to collect, use cryo datasets to see all available
+  [DATATYPE]...  datatype(s) to collect, use triodion datasets to see all available
 
 Options:
       --remember    Remember current command for future use
   -v, --verbose     Extra verbosity
       --no-verbose  Run quietly without printing information to stdout
-  -h, --help        Print help
+  -h, --help        Print help (see more with '--help')
   -V, --version     Print version
 
 Content Options:
-  -b, --blocks <BLOCKS>...           Block numbers, see syntax below
-      --timestamps <TIMESTAMPS>...   Timestamp numbers in unix, overridden by blocks
-  -t, --txs <TXS>...                 Transaction hashes, see syntax below
-  -a, --align                        Align chunk boundaries to regular intervals,
-                                     e.g. (1000 2000 3000), not (1106 2106 3106)
-      --reorg-buffer <N_BLOCKS>      Reorg buffer, save blocks only when this old,
-                                     can be a number of blocks [default: 0]
-  -i, --include-columns [<COLS>...]  Columns to include alongside the defaults,
-                                     use `all` to include all available columns
-  -e, --exclude-columns [<COLS>...]  Columns to exclude from the defaults
-      --columns [<COLS>...]          Columns to use instead of the defaults,
-                                     use `all` to use all available columns
-      --u256-types <U256_TYPES>...   Set output datatype(s) of U256 integers
-                                     [default: binary, string, f64]
-      --hex                          Use hex string encoding for binary columns
-  -s, --sort [<SORT>...]             Columns(s) to sort by, `none` for unordered
-      --exclude-failed               Exclude items from failed transactions
+  -b, --blocks <BLOCKS>...            Block numbers, see syntax below
+      --timestamps [<TIMESTAMPS>...]  Timestamps in unix, see syntax below
+  -t, --txs <TXS>...                  Transaction hashes, see syntax below
+  -a, --align                         Align chunk boundaries to regular intervals,
+                                      e.g. (1000 2000 3000), not (1106 2106 3106)
+      --reorg-buffer <N_BLOCKS>       Reorg buffer, save blocks only when this old,
+                                      can be a number of blocks [default: 0]
+  -i, --include-columns [<COLS>...]   Columns to include alongside the defaults,
+                                      use `all` to include all available columns
+  -e, --exclude-columns [<COLS>...]   Columns to exclude from the defaults
+      --columns [<COLS>...]           Columns to use instead of the defaults,
+                                      use `all` to use all available columns
+      --u256-types <U256_TYPES>...    Set output datatype(s) of U256 integers
+                                      [default: binary, string, f64]
+      --hex                           Use hex string encoding for binary columns
+  -s, --sort [<SORT>...]              Columns(s) to sort by, `none` for unordered
+      --exclude-failed                Exclude items from failed transactions
 
 Source Options:
-  -r, --rpc <RPC>                    RPC url [default: ETH_RPC_URL env var]
+  -r, --rpc <RPC>                    RPC url [default: 1. MESC 2. ETH_RPC_URL]
+      --l1-rpc <URL>                 L1 (settlement) RPC url for L2 datasets that read L1-side events
       --network-name <NETWORK_NAME>  Network name [default: name of eth_getChainId]
 
 Acquisition Options:
-  -l, --requests-per-second <limit>  Ratelimit on requests per second
-      --max-retries <R>              Max retries for provider errors [default: 5]
-      --initial-backoff <B>          Initial retry backoff time (ms) [default: 500]
-      --max-concurrent-requests <M>  Global number of concurrent requests
-      --max-concurrent-chunks <M>    Number of chunks processed concurrently
-      --chunk-order <CHUNK_ORDER>    Chunk collection order (normal, reverse, or random)
-  -d, --dry                          Dry run, collect no data
+  -l, --requests-per-second <limit>   Ratelimit on requests per second
+      --max-retries <R>               Max retries for provider errors [default: 5]
+      --initial-backoff <B>           Initial retry backoff time (ms) [default: 500]
+      --compute-units-per-second <U>  The number of compute units per second for this provider [default: 50]
+      --max-concurrent-requests <M>   Global number of concurrent requests
+      --max-concurrent-chunks <M>     Number of chunks processed concurrently
+      --chunk-order <CHUNK_ORDER>     Chunk collection order (normal, reverse, random)
+  -d, --dry                           Dry run, collect no data
 
 Output Options:
   -c, --chunk-size <CHUNK_SIZE>      Number of blocks per file [default: 1000]
@@ -220,7 +224,7 @@ Output Options:
       --no-stats                     Do not write statistics to parquet files
       --compression <NAME [#]>...    Compression algorithm and level [default: lz4]
       --report-dir <REPORT_DIR>      Directory to save summary report
-                                     [default: {output_dir}/.cryo/reports]
+                                     [default: {output_dir}/.triodion/reports]
       --no-report                    Avoid saving a summary report
 
 Dataset-specific Options:
@@ -239,17 +243,20 @@ Dataset-specific Options:
       --event-signature <SIG>...     Event signature for log decoding
       --inner-request-size <BLOCKS>  Blocks per request (eth_getLogs) [default: 1]
       --js-tracer <tracer>           Event signature for log decoding
+      --no-multicall                 Disable Multicall3 batching for eth_calls / erc20_balances
+      --multicall-batch-size <N>     Cap on inner eth_calls per Multicall3 batch (0 = the dataset's own default) [default: 0]
+      --multicall-require-success    Mark the whole batch as failed if any inner call reverts (default: per-call failures return null)
 
 Optional Subcommands:
-      cryo help                      display help message
-      cryo help syntax               display block + tx specification syntax
-      cryo help datasets             display list of all datasets
-      cryo help <DATASET(S)>         display info about a dataset
+      triodion help                      display help message
+      triodion help syntax               display block + tx specification syntax
+      triodion help datasets             display list of all datasets
+      triodion help <DATASET(S)>         display info about a dataset
 ```
 
-#### cryo syntax
+#### triodion syntax
 
-(output of `cryo help syntax`)
+(output of `triodion help syntax`)
 
 ```
 Block specification syntax
@@ -260,21 +267,9 @@ Block specification syntax
 - numbers can contain { _ . K M B }  5_000 5K 15M 15.5M
 - omitting range end means latest    15.5M: == 15.5M:latest
 - omitting range start means 0       :700 == 0:700
-- minus on start means minus end     -1000:7000 == 6001:7001
-- plus sign on end means plus start  15M:+1000 == 15M:15.001M
+- minus on start means minus end     -1000:7000 == 6000:7000
+- plus sign on end means plus start  15M:+1000 == 15M:15.001K
 - can use every nth value            2000:5000:1000 == 2000 3000 4000
-- can use n values total             100:200/5 == 100 124 149 174 199
-
-Timestamp specification syntax
-- can use numbers                    --timestamp 5000 6000 7000
-- can use ranges                     --timestamp 12M:13M 15M:16M
-- can use a parquet file             --timestamp ./path/to/file.parquet[:COLUMN_NAME]
-- can use multiple parquet files     --timestamp ./path/to/files/*.parquet[:COLUMN_NAME]
-- can contain { _ . m h d w M y }    31_536_000 525600m 8760h 365d 52.143w 12.17M 1y
-- omitting range end means latest    15.5M: == 15.5M:latest
-- omitting range start means 0       :700 == 0:700
-- minus on start means minus end     -1000:7000 == 6001:7001
-- plus sign on end means plus start  15M:+1000 == 15M:15.001M
 - can use n values total             100:200/5 == 100 124 149 174 199
 
 Transaction specification syntax
@@ -284,13 +279,13 @@ Transaction specification syntax
 - can use multiple parquet files     --txs ./path/to/ethereum__logs*.parquet
 ```
 
-#### cryo datasets
+#### triodion datasets
 
-(output of `cryo help datasets`)
+(output of `triodion help datasets`)
 
 ```
-cryo datasets
-─────────────
+triodion datasets
+─────────────────
 - address_appearances
 - balance_diffs
 - balance_reads
@@ -305,6 +300,7 @@ cryo datasets
 - erc20_supplies
 - erc20_transfers
 - erc20_approvals
+- erc20_wrapper_events (aliases = wrapper_events, weth_events)
 - erc721_metadata
 - erc721_transfers
 - eth_calls
@@ -334,8 +330,9 @@ dataset group names
 - blocks_and_transactions: blocks, transactions
 - call_trace_derivatives: contracts, native_transfers, traces
 - geth_state_diffs: geth_balance_diffs, geth_code_diffs, geth_nonce_diffs, geth_storage_diffs
+- log_events: logs, erc20_transfers, erc20_approvals, erc721_transfers, erc20_wrapper_events
 - state_diffs: balance_diffs, code_diffs, nonce_diffs, storage_diffs
 - state_reads: balance_reads, code_reads, nonce_reads, storage_reads
 
-use cryo help <DATASET> to print info about a specific dataset
+use triodion help <DATASET> to print info about a specific dataset
 ```

@@ -37,21 +37,21 @@ pub async fn freeze(
 
     // print summary
     if env.verbose >= 1 {
-        summaries::print_cryo_intro(query, source, sink, env, payloads.len() as u64)?;
+        summaries::print_triodion_intro(query, source, sink, env, payloads.len() as u64)?;
     }
 
     // check dry run
     if env.dry {
-        return Ok(None)
+        return Ok(None);
     };
 
     // check if empty
     if payloads.is_empty() {
         let results = FreezeSummary { skipped: skipping, ..Default::default() };
         if env.verbose >= 1 {
-            summaries::print_cryo_conclusion(&results, query, env)
+            summaries::print_triodion_conclusion(&results, query, env)
         }
-        return Ok(Some(results))
+        return Ok(Some(results));
     }
 
     // create initial report
@@ -64,7 +64,7 @@ pub async fn freeze(
 
     // create summary
     if env.verbose >= 1 {
-        summaries::print_cryo_conclusion(&results, query, env)
+        summaries::print_triodion_conclusion(&results, query, env)
     }
 
     // create final report
@@ -95,7 +95,7 @@ fn get_payloads(
             let paths = sink.get_paths(query, &partition, Some(vec![datatype.clone()]))?;
             if !sink.overwrite && paths.values().all(|path| path.exists()) {
                 skipping.push(partition);
-                continue
+                continue;
             }
 
             // check for path collisions
@@ -105,7 +105,7 @@ fn get_payloads(
             } else {
                 let message =
                     format!("output path collision: {:?}", paths_set.intersection(&all_paths));
-                return Err(err(&message))
+                return Err(err(&message));
             };
 
             let payload = (

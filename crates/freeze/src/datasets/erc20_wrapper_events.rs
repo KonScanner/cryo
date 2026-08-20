@@ -20,7 +20,7 @@ use polars::prelude::*;
 /// their `Deposit(sender, owner, assets, shares)` /
 /// `Withdraw(sender, receiver, owner, assets, shares)` events are
 /// multi-argument and hash to different topic0s, so they are not matched here.
-#[cryo_to_df::to_df(Datatype::Erc20WrapperEvents)]
+#[triodion_macros::to_df(Datatype::Erc20WrapperEvents)]
 #[derive(Default)]
 pub struct Erc20WrapperEvents {
     n_rows: u64,

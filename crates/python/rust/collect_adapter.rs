@@ -5,8 +5,8 @@ use pyo3::{
 };
 use pyo3_polars::PyDataFrame;
 
-use cryo_cli::{parse_args, Args};
-use cryo_freeze::collect;
+use triodion_cli::{parse_args, Args};
+use triodion_core::collect;
 
 #[pyfunction(
     signature = (
@@ -237,7 +237,7 @@ async fn run_collect(args: Args) -> PolarsResult<DataFrame> {
 }
 
 async fn run_execute(command: String) -> PolarsResult<DataFrame> {
-    let args = match cryo_cli::parse_str(command.as_str()).await {
+    let args = match triodion_cli::parse_str(command.as_str()).await {
         Ok(opts) => opts,
         Err(e) => panic!("error parsing opts {:?}", e),
     };

@@ -6,10 +6,10 @@ use alloy::{
     rpc::client::{BuiltInConnectionString, ClientBuilder, RpcClient},
     transports::layers::RetryBackoffLayer,
 };
-use cryo_freeze::{ParseError, Source, SourceLabels};
 use governor::{Quota, RateLimiter};
 use polars::prelude::*;
 use std::num::NonZeroU32;
+use triodion_core::{ParseError, Source, SourceLabels};
 
 pub(crate) async fn parse_source(args: &Args) -> Result<Source, ParseError> {
     // parse network info
@@ -102,8 +102,8 @@ pub(crate) fn parse_rpc_url(args: &Args) -> Result<String, ParseError> {
     // get MESC url
     let mesc_url = if mesc::is_mesc_enabled() {
         let endpoint = match &args.rpc {
-            Some(url) => mesc::get_endpoint_by_query(url, Some("cryo")),
-            None => mesc::get_default_endpoint(Some("cryo")),
+            Some(url) => mesc::get_endpoint_by_query(url, Some("triodion")),
+            None => mesc::get_default_endpoint(Some("triodion")),
         };
         match endpoint {
             Ok(endpoint) => endpoint.map(|endpoint| endpoint.url),
@@ -125,7 +125,7 @@ pub(crate) fn parse_rpc_url(args: &Args) -> Result<String, ParseError> {
         url
     } else {
         let message = "must provide --rpc or setup MESC or set ETH_RPC_URL";
-        return Err(ParseError::ParseError(message.to_string()))
+        return Err(ParseError::ParseError(message.to_string()));
     };
 
     // prepend http or https if need be

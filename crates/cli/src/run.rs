@@ -2,8 +2,8 @@ use crate::{args, parse, remember};
 use clap_cryo::Parser;
 use color_print::cstr;
 use colored::Colorize;
-use cryo_freeze::{err, CollectError, ExecutionEnv, FreezeSummary};
 use std::{sync::Arc, time::SystemTime};
+use triodion_core::{err, CollectError, ExecutionEnv, FreezeSummary};
 
 /// Entry point to run the CLI application.
 pub async fn run(args: args::Args) -> Result<Option<FreezeSummary>, CollectError> {
@@ -11,14 +11,17 @@ pub async fn run(args: args::Args) -> Result<Option<FreezeSummary>, CollectError
         return handle_help_subcommands(args);
     }
 
-    let cryo_dir = build_cryo_directory(std::path::Path::new(&args.output_dir));
+    let triodion_dir = build_triodion_directory(std::path::Path::new(&args.output_dir));
 
-    let args =
-        if args.datatype.is_empty() { load_or_remember_command(args, &cryo_dir)? } else { args };
+    let args = if args.datatype.is_empty() {
+        load_or_remember_command(args, &triodion_dir)?
+    } else {
+        args
+    };
 
     if args.remember {
         println!("remembering this command for future use\n");
-        remember::save_remembered_command(cryo_dir, &args)?;
+        remember::save_remembered_command(triodion_dir, &args)?;
     }
 
     // handle regular flow
@@ -30,20 +33,22 @@ fn is_help_command(args: &args::Args) -> bool {
     args.datatype.first() == Some(&"help".to_string())
 }
 
-/// Build the cryo directory path.
-fn build_cryo_directory(output_dir: &std::path::Path) -> std::path::PathBuf {
-    output_dir.join(".cryo")
+/// Build the triodion directory path.
+fn build_triodion_directory(output_dir: &std::path::Path) -> std::path::PathBuf {
+    output_dir.join(".triodion")
 }
 
 /// Load a previously remembered command or return the current args.
 fn load_or_remember_command(
     mut args: args::Args,
-    cryo_dir: &std::path::Path,
+    triodion_dir: &std::path::Path,
 ) -> Result<args::Args, CollectError> {
-    let remembered = remember::load_remembered_command(cryo_dir.to_path_buf())?;
-    // Warn if the remembered command comes from a different Cryo version.
-    if remembered.cryo_version != cryo_freeze::CRYO_VERSION {
-        eprintln!("remembered command comes from a different Cryo version, proceed with caution\n");
+    let remembered = remember::load_remembered_command(triodion_dir.to_path_buf())?;
+    // Warn if the remembered command comes from a different Triodion version.
+    if remembered.triodion_version != triodion_core::TRIODION_VERSION {
+        eprintln!(
+            "remembered command comes from a different Triodion version, proceed with caution\n"
+        );
     }
     print_remembered_command(&remembered.command);
     args = args.merge_with_precedence(remembered.args);
@@ -55,7 +60,7 @@ fn print_remembered_command(command: &[String]) {
     println!(
         "{} {} {}",
         "remembering previous command:".truecolor(170, 170, 170),
-        "cryo".bold().white(),
+        "triodion".bold().white(),
         command.iter().skip(1).cloned().collect::<Vec<_>>().join(" ").white().bold()
     );
     println!();
@@ -69,7 +74,7 @@ async fn run_freeze_process(args: args::Args) -> Result<Option<FreezeSummary>, C
     let source = Arc::new(source);
     let env = ExecutionEnv { t_start_parse, ..env }.set_start_time();
 
-    cryo_freeze::freeze(&query, &source, &sink, &env).await
+    triodion_core::freeze(&query, &source, &sink, &env).await
 }
 
 /// Handle help-related subcommands.
@@ -80,7 +85,7 @@ fn handle_help_subcommands(args: args::Args) -> Result<Option<FreezeSummary>, Co
         // if "syntax help" is provided, print syntax help
         2 if args.datatype[1] == "syntax" => print_syntax_help(),
         // if "help datasets" is provided, print dataset information
-        2 if args.datatype.contains(&"datasets".to_string()) => cryo_freeze::print_all_datasets(),
+        2 if args.datatype.contains(&"datasets".to_string()) => triodion_core::print_all_datasets(),
         // if "help <datatype>" is provided, print detailed help
         _ => handle_detailed_help(args)?,
     }
@@ -89,7 +94,7 @@ fn handle_help_subcommands(args: args::Args) -> Result<Option<FreezeSummary>, Co
 
 /// Print general help for the CLI tool.
 fn print_general_help() {
-    args::Args::parse_from(vec!["cryo", "-h"]);
+    args::Args::parse_from(vec!["triodion", "-h"]);
 }
 
 /// Print syntax help for block and transaction specification.
@@ -127,7 +132,7 @@ fn handle_detailed_help(args: args::Args) -> Result<(), CollectError> {
             println!("\n");
         }
         if let Some(schema) = schemas.get(&datatype) {
-            cryo_freeze::print_dataset_info(datatype, schema);
+            triodion_core::print_dataset_info(datatype, schema);
         } else {
             return Err(err(format!("missing schema for datatype: {:?}", datatype).as_str()));
         }

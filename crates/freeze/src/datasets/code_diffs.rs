@@ -6,7 +6,7 @@ use alloy::{
 use polars::prelude::*;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::CodeDiffs)]
+#[triodion_macros::to_df(Datatype::CodeDiffs)]
 #[derive(Default)]
 pub struct CodeDiffs {
     pub(crate) n_rows: u64,
@@ -83,7 +83,7 @@ pub(crate) fn process_code_diff(
         Delta::Unchanged => return,
         Delta::Added(value) => {
             if value.is_empty() {
-                return
+                return;
             };
             (Vec::new(), value.to_vec())
         }

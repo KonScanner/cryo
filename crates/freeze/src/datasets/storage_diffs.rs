@@ -6,7 +6,7 @@ use alloy::{
 use polars::prelude::*;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::StorageDiffs)]
+#[triodion_macros::to_df(Datatype::StorageDiffs)]
 #[derive(Default)]
 pub struct StorageDiffs {
     pub(crate) n_rows: u64,

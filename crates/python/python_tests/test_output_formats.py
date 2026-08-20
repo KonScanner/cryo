@@ -2,7 +2,7 @@ import tempfile
 
 import pytest
 
-import cryo
+import triodion
 import polars as pl
 
 
@@ -29,7 +29,7 @@ def test_file_output(query, format):
     output_dir = tempfile.mkdtemp()
     if extension != 'parquet':
         query = dict(query, **{extension: True})
-    result = cryo.freeze(output_dir=output_dir, **query)
+    result = triodion.freeze(output_dir=output_dir, **query)
     for datatype in query['datatype']:
         path = result['paths'][datatype]
         assert isinstance(path, list) and len(path) == 1
@@ -37,7 +37,7 @@ def test_file_output(query, format):
         df_freeze = reader(path)
         query_without_datatype = dict(query)
         del query_without_datatype['datatype']
-        df_collect = cryo.collect(datatype, **query_without_datatype)
+        df_collect = triodion.collect(datatype, **query_without_datatype)
         assert df_freeze.frame_equal(df_collect)
 
 
@@ -53,6 +53,6 @@ python_formats = [
 @pytest.mark.parametrize('format', python_formats)
 def python_output_python_formats(query, format):
     output_format, output_type = format
-    df = cryo.collect(output_format=output_format, **query)
+    df = triodion.collect(output_format=output_format, **query)
     assert isinstance(df, output_type)
 

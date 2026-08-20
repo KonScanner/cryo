@@ -2,7 +2,7 @@ use crate::*;
 use polars::prelude::*;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::JavascriptTraces)]
+#[triodion_macros::to_df(Datatype::JavascriptTraces)]
 #[derive(Default)]
 pub struct JavascriptTraces {
     pub(crate) n_rows: u64,

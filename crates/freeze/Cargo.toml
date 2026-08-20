@@ -1,7 +1,7 @@
 [package]
-name = "cryo_freeze"
+name = "triodion-core"
 build = "build.rs"
-description = "cryo is the easiest way to extract blockchain data to parquet, csv, or json"
+description = "triodion is the easiest way to extract blockchain data to parquet, csv, or json"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -14,7 +14,7 @@ repository.workspace = true
 alloy = { workspace = true }
 chrono = { workspace = true }
 colored = { workspace = true }
-cryo_to_df = { workspace = true }
+triodion-macros = { workspace = true }
 futures = { workspace = true }
 governor = { workspace = true }
 heck = { workspace = true }

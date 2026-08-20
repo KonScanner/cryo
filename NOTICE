@@ -1,5 +1,5 @@
-cryo (KonScanner fork)
-======================
+triodion (KonScanner fork of cryo)
+==================================
 
 This product is a derivative work of cryo, originally developed by Paradigm
 and the Cryo Contributors:
@@ -29,6 +29,14 @@ This fork diverges from upstream commit 559b654 (2025-01-08). The files listed
 by `git diff --name-only 559b654...HEAD` have been changed. Substantive
 modifications, newest first:
 
+  * Rename the project from cryo to triodion. The Rust crates cryo_cli,
+    cryo_freeze and cryo_to_df became triodion-cli, triodion-core and
+    triodion-macros; the CLI binary `cryo` became `triodion`; the state
+    directory .cryo/ became .triodion/; the MESC profile name "cryo" became
+    "triodion"; and the report JSON field cryo_version became
+    triodion_version. The Python distribution and import path both became
+    `triodion` (previously `cryo-konscanner` and `import cryo`).
+  * Repair two LogEvents coalescing defects and narrow the union filter.
   * Validate fixed-width CLI byte arguments instead of panicking. Address and
     topic values from --address / --topic0..3 are length-checked before
     conversion to alloy fixed-width types.

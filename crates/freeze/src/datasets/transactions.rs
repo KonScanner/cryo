@@ -9,7 +9,7 @@ use alloy::{
 use polars::prelude::*;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::Transactions)]
+#[triodion_macros::to_df(Datatype::Transactions)]
 #[derive(Default)]
 pub struct Transactions {
     n_rows: u64,
@@ -214,7 +214,7 @@ pub(crate) fn process_transaction(
     let success = if exclude_failed | schema.has_column("success") {
         let success = tx_success(&tx, &receipt)?;
         if exclude_failed & !success {
-            return Ok(())
+            return Ok(());
         }
         success
     } else {

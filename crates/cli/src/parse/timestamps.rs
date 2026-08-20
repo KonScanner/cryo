@@ -1,6 +1,6 @@
 use alloy::rpc::types::BlockTransactionsKind;
-use cryo_freeze::{BlockChunk, ParseError, Source};
 use polars::prelude::*;
+use triodion_core::{BlockChunk, ParseError, Source};
 
 use crate::{
     parse::blocks::{block_range_to_block_chunk, postprocess_block_chunks},
@@ -332,7 +332,7 @@ mod tests {
     use governor::{Quota, RateLimiter};
 
     use super::*;
-    use cryo_freeze::SourceLabels;
+    use triodion_core::SourceLabels;
 
     async fn setup_source() -> Source {
         let rpc_url = match crate::parse::source::parse_rpc_url(&Args::default()) {

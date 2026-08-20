@@ -12,7 +12,7 @@ use polars::prelude::*;
 use std::collections::HashMap;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::AddressAppearances)]
+#[triodion_macros::to_df(Datatype::AddressAppearances)]
 #[derive(Default)]
 pub struct AddressAppearances {
     n_rows: usize,

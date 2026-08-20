@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use cryo_freeze::{ExecutionEnv, FileOutput, ParseError, Query, Source};
+use triodion_core::{ExecutionEnv, FileOutput, ParseError, Query, Source};
 
 use crate::args::Args;
 use clap_cryo::Parser;

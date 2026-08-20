@@ -1,32 +1,29 @@
 
 ## Installation
 
-There are two main options for installing `cryo`.
+There are two main options for installing `triodion`.
 
 Installing from pip is faster and does not require rust to be installed.
 
-Installing from source allows using the latest unreleased version of cryo.
+Installing from source allows using the latest unreleased version of triodion.
 
 #### Option 1: Install from pip
 
 ```
-pip install cryo-konscanner
+pip install triodion
 ```
-
-The distribution name is `cryo-konscanner`, not `cryo` — plain `cryo` on PyPI is the
-upstream package. The import path is unchanged: `import cryo` still works.
 
 #### Option 2: Install from source
 
 ```
 pip install maturin
-git clone https://github.com/KonScanner/cryo
-cd cryo/crates/python
+git clone https://github.com/KonScanner/triodion
+cd triodion/crates/python
 maturin build --release
 pip install --force-reinstall <OUTPUT_OF_MATURIN_BUILD>.whl
 ```
 
 #### Other notes
 
-If you would like `cryo` to output results using pandas instead of polars, also install pandas: `pip install pandas`
+If you would like `triodion` to output results using pandas instead of polars, also install pandas: `pip install pandas`
 

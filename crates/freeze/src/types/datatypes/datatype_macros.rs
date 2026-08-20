@@ -131,7 +131,7 @@ macro_rules! define_datatypes {
                     let inner_request_size = if datatype.use_block_ranges() {
                         // User's explicit `--inner-request-size` wins iff it's
                         // larger than the dataset's preference. When the user
-                        // leaves the default (cryo CLI's `1`), the dataset's
+                        // leaves the default (triodion CLI's `1`), the dataset's
                         // preference kicks in for log-shaped datasets.
                         Some(source.inner_request_size.max(datatype.default_inner_request_size()))
                     } else {

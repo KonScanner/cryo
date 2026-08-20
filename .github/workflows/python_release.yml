@@ -132,7 +132,7 @@ jobs:
       - sdist
     environment:
       name: pypi
-      url: https://pypi.org/p/cryo-python
+      url: https://pypi.org/p/cryo-konscanner
     permissions:
       id-token: write
     steps:

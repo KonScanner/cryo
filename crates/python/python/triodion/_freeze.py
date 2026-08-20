@@ -10,14 +10,14 @@ if typing.TYPE_CHECKING:
 
 async def async_freeze(
     datatype: str | typing.Sequence[str],
-    **kwargs: Unpack[_spec.CryoCliArgs],
+    **kwargs: Unpack[_spec.TriodionCliArgs],
 ) -> None:
     """asynchronously collect data and save to files
 
-    see cryo.parse_kwargs() for descriptions of arguments
+    see triodion.parse_kwargs() for descriptions of arguments
     """
 
-    from . import _cryo_rust  # type: ignore
+    from . import _triodion_rust  # type: ignore
     from . import _args
 
     if isinstance(datatype, str):
@@ -32,12 +32,12 @@ async def async_freeze(
         raise Exception('invalid format for datatype(s)')
 
     cli_args = _args.parse_cli_args(**kwargs)
-    return await _cryo_rust._freeze(datatypes, **cli_args)  # type: ignore
+    return await _triodion_rust._freeze(datatypes, **cli_args)  # type: ignore
 
 
 def freeze(
     datatype: str | typing.Sequence[str],
-    **kwargs: Unpack[_spec.CryoCliArgs],
+    **kwargs: Unpack[_spec.TriodionCliArgs],
 ) -> None:
     """collect data and save to files"""
 

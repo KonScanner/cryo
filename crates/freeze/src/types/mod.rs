@@ -1,4 +1,4 @@
-/// type specifications for cryo_freeze crate
+/// type specifications for triodion_core crate
 /// type specifications for chunk types
 pub mod chunks;
 /// conversion operations
@@ -28,7 +28,7 @@ pub mod execution;
 
 /// report generation
 pub mod reports;
-pub use reports::CRYO_VERSION;
+pub use reports::TRIODION_VERSION;
 
 /// type specifications for dataframes
 #[macro_use]

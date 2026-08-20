@@ -3,7 +3,7 @@ use alloy::primitives::{Address, U256};
 use polars::prelude::*;
 
 /// columns for balances
-#[cryo_to_df::to_df(Datatype::Slots)]
+#[triodion_macros::to_df(Datatype::Slots)]
 #[derive(Default)]
 pub struct Slots {
     n_rows: usize,

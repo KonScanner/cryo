@@ -4,14 +4,14 @@ members  = ["crates/cli", "crates/freeze", "crates/to_df"]
 # crates/python is intentionally NOT a workspace member: it depends on
 # pyo3-polars which enables `polars-error/python`, propagating pyo3 with the
 # `extension-module` feature into every workspace crate via Cargo's feature
-# unification — which then fails to link the standalone `cryo` binary.
+# unification — which then fails to link the standalone `triodion` binary.
 # It is a standalone crate (see crates/python/Cargo.toml) and is built
 # separately via the `python-wheel` Makefile target.
 exclude  = ["crates/python"]
 
 # Resolver 3 (Cargo 1.84+) gives per-target feature resolution, which we need
 # so pyo3's `extension-module` feature (enabled only by crates/python) does
-# not propagate via workspace unification into the standalone `cryo` binary,
+# not propagate via workspace unification into the standalone `triodion` binary,
 # where it causes link errors for PyErr_* symbols.
 resolver = "3"
 
@@ -19,14 +19,14 @@ resolver = "3"
 version = "0.4.4"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/KonScanner/cryo"
-repository = "https://github.com/KonScanner/cryo"
+homepage = "https://github.com/KonScanner/triodion"
+repository = "https://github.com/KonScanner/triodion"
 exclude = [".github/"]
 
 [workspace.dependencies]
-cryo_cli = { version = "0.4.4", path = "./crates/cli" }
-cryo_freeze = { version = "0.4.4", path = "./crates/freeze" }
-cryo_to_df = { version = "0.4.4", path = "./crates/to_df" }
+triodion-cli = { version = "0.4.4", path = "./crates/cli" }
+triodion-core = { version = "0.4.4", path = "./crates/freeze" }
+triodion-macros = { version = "0.4.4", path = "./crates/to_df" }
 
 alloy = { version = "2.0.5", features = [
     "full",
@@ -63,7 +63,7 @@ hex = "0.4.3"
 heck = "0.5.0"
 indexmap = "2.14.0"
 indicatif = "0.18.4"
-# lazy_static intentionally removed: not used by any cryo crate (only pulled
+# lazy_static intentionally removed: not used by any triodion crate (only pulled
 # in transitively by colored/color-print). LazyLock (std, since 1.80) is the
 # modern replacement if we ever need one in our own code.
 mesc = "0.1.4"
@@ -87,7 +87,7 @@ prefix-hex = "0.7.1"
 #
 # NB: `extension-module` is set per-crate in crates/python/Cargo.toml only.
 # Enabling it workspace-wide propagates via Cargo's feature unification and
-# breaks the standalone `cryo` binary (link errors for PyErr_* symbols).
+# breaks the standalone `triodion` binary (link errors for PyErr_* symbols).
 pyo3 = "0.27"
 pyo3-build-config = "0.27"
 pyo3-async-runtimes = { version = "0.27", features = ["tokio-runtime"] }

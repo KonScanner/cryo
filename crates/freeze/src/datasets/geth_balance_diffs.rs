@@ -3,7 +3,7 @@ use alloy::primitives::U256;
 use polars::prelude::*;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::GethBalanceDiffs)]
+#[triodion_macros::to_df(Datatype::GethBalanceDiffs)]
 #[derive(Default)]
 pub struct GethBalanceDiffs {
     pub(crate) n_rows: u64,

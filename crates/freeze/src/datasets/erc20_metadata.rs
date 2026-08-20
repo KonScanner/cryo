@@ -7,7 +7,7 @@ use polars::prelude::*;
 use std::collections::HashMap;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::Erc20Metadata)]
+#[triodion_macros::to_df(Datatype::Erc20Metadata)]
 #[derive(Default)]
 pub struct Erc20Metadata {
     n_rows: u64,

@@ -3,22 +3,15 @@ requires = ["maturin>=1.1,<2.0"]
 build-backend = "maturin"
 
 [project]
-# Distribution name diverges from upstream paradigmxyz/cryo on purpose: this
-# fork's wheel is published as `cryo-konscanner` so it cannot be confused
-# with — nor silently substituted for — the upstream PyPI release.
-# Pip resolving plain `cryo` against PyPI will hit upstream; consumers of
-# this fork must depend on `cryo-konscanner` explicitly.
-#
-# The PYTHON IMPORT PATH is unchanged: `import cryo` still works because
-# the Python package directory is `python/cryo/` (see [tool.maturin]
-# python-source below) and the native module is `cryo._cryo_rust`. The
-# PEP 621 `name` only affects the wheel filename and pip metadata.
-name = "cryo-konscanner"
+# Distribution name and import path are both `triodion`, matching the Rust
+# crates. This is a BREAKING change from `cryo-konscanner` / `import cryo`:
+# consumers must update both the dependency name and their import statements.
+name = "triodion"
 # Version is pulled from Cargo.toml by maturin. PEP 621 requires either
 # `version` or `dynamic = ["version"]`; the latter keeps the source of truth
 # in one place (Cargo.toml).
 dynamic = ["version"]
-description = "cryo (KonScanner fork) — blockchain data extractor with extensions."
+description = "triodion (KonScanner fork of cryo) — blockchain data extractor with extensions."
 requires-python = ">=3.7"
 classifiers = [
     "Programming Language :: Rust",
@@ -30,12 +23,12 @@ readme = "README.md"
 
 [tool.maturin]
 python-source = "python"
-module-name = "cryo._cryo_rust"
+module-name = "triodion._triodion_rust"
 features = ["pyo3/extension-module"]
 
 
 [tool.mypy]
 strict = true
-files = ["python/cryo"]
+files = ["python/triodion"]
 enable_incomplete_feature = "Unpack"
 

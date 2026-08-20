@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use cryo_freeze::{
+use triodion_core::{
     ColumnEncoding, Datatype, FileFormat, LogDecoder, MultiDatatype, ParseError, Table,
 };
 
 use super::file_output;
 use crate::args::Args;
-use cryo_freeze::U256Type;
 use std::str::FromStr;
+use triodion_core::U256Type;
 
 fn parse_datatypes(raw_inputs: &Vec<String>) -> Result<Vec<Datatype>, ParseError> {
     let mut datatypes = Vec::new();
@@ -18,7 +18,7 @@ fn parse_datatypes(raw_inputs: &Vec<String>) -> Result<Vec<Datatype>, ParseError
                 for datatype in multi_datatype.datatypes() {
                     datatypes.push(datatype)
                 }
-                continue 'outer
+                continue 'outer;
             }
         }
         datatypes.push(Datatype::from_str(raw_input)?);
@@ -110,7 +110,7 @@ fn parse_u256_types(args: &Args) -> Result<Vec<U256Type>, ParseError> {
 
 fn ensure_included_columns(
     include_columns: &[String],
-    schemas: &cryo_freeze::Schemas,
+    schemas: &triodion_core::Schemas,
 ) -> Result<(), ParseError> {
     let mut unknown_columns = Vec::new();
     for column in include_columns.iter() {
@@ -119,7 +119,7 @@ fn ensure_included_columns(
         for schema in schemas.values() {
             if schema.has_column(column) {
                 in_a_schema = true;
-                break
+                break;
             }
         }
 
@@ -131,14 +131,14 @@ fn ensure_included_columns(
         return Err(ParseError::ParseError(format!(
             "datatypes do not support these columns: {:?}",
             unknown_columns
-        )))
+        )));
     }
     Ok(())
 }
 
 fn ensure_excluded_columns(
     exclude_columns: &[String],
-    schemas: &cryo_freeze::Schemas,
+    schemas: &triodion_core::Schemas,
 ) -> Result<(), ParseError> {
     let mut unknown_columns = Vec::new();
     for column in exclude_columns.iter() {
@@ -147,7 +147,7 @@ fn ensure_excluded_columns(
         for datatype in schemas.keys() {
             if datatype.column_types().contains_key(&column.as_str()) {
                 in_a_schema = true;
-                break
+                break;
             }
         }
 
@@ -159,7 +159,7 @@ fn ensure_excluded_columns(
         return Err(ParseError::ParseError(format!(
             "datatypes do not support these columns: {:?}",
             unknown_columns
-        )))
+        )));
     }
     Ok(())
 }

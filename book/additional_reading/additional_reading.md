@@ -4,6 +4,10 @@
 - [Ultimate tracing reference](https://github.com/paradigmxyz/ultimate_evm_tracing_reference)
 
 ### Cryo Tutorials
+
+These describe upstream `cryo`. triodion's CLI is invoked as `triodion`
+rather than `cryo`, but the dataset names and flags are the same.
+
 - [cryo: Your gateway to blockchain data](https://docs.chainstack.com/docs/cryo-your-gateway-to-blockchain-data)
 - [Analyzing ethereum with cryo](https://mteam88.github.io/posts/analyzing-ethereum-with-cryo/)
 - [Extracting blockchain data with cryo](https://www.degencode.com/p/extracting-blockchain-data-with-cryo)

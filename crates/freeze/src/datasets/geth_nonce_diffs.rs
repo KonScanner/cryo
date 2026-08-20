@@ -2,7 +2,7 @@ use crate::*;
 use polars::prelude::*;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::GethNonceDiffs)]
+#[triodion_macros::to_df(Datatype::GethNonceDiffs)]
 #[derive(Default)]
 pub struct GethNonceDiffs {
     pub(crate) n_rows: u64,

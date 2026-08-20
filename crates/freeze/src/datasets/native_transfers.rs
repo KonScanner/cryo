@@ -6,7 +6,7 @@ use alloy::{
 use polars::prelude::*;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::NativeTransfers)]
+#[triodion_macros::to_df(Datatype::NativeTransfers)]
 #[derive(Default)]
 pub struct NativeTransfers {
     n_rows: u64,

@@ -4,12 +4,12 @@ use super::{
     timestamps,
 };
 use crate::args::Args;
-use cryo_freeze::{
+use rand::{seq::SliceRandom, thread_rng};
+use std::{collections::HashMap, str::FromStr, sync::Arc};
+use triodion_core::{
     AddressChunk, CallDataChunk, Datatype, Dim, ParseError, Partition, PartitionLabels, SlotChunk,
     Source, Table, TimeDimension, TopicChunk, TransactionChunk,
 };
-use rand::{seq::SliceRandom, thread_rng};
-use std::{collections::HashMap, str::FromStr, sync::Arc};
 
 type ChunkLabels = Vec<Option<String>>;
 
@@ -155,19 +155,19 @@ fn parse_call_datas(
         }
         (None, None, Some(_)) => {
             let message = "must specify function if specifying inputs";
-            return Err(ParseError::ParseError(message.to_string()))
+            return Err(ParseError::ParseError(message.to_string()));
         }
         (Some(_), Some(_), None) => {
             let message = "cannot specify both call_data and function";
-            return Err(ParseError::ParseError(message.to_string()))
+            return Err(ParseError::ParseError(message.to_string()));
         }
         (Some(_), None, Some(_)) => {
             let message = "cannot specify both call_data and inputs";
-            return Err(ParseError::ParseError(message.to_string()))
+            return Err(ParseError::ParseError(message.to_string()));
         }
         (Some(_), Some(_), Some(_)) => {
             let message = "cannot specify both call_data and function";
-            return Err(ParseError::ParseError(message.to_string()))
+            return Err(ParseError::ParseError(message.to_string()));
         }
     };
     Ok(Some(vec![CallDataChunk::Values(call_datas)]))

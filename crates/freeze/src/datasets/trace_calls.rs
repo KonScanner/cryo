@@ -4,7 +4,7 @@ use alloy::rpc::types::trace::parity::{Action, TraceOutput, TraceType, Transacti
 use polars::prelude::*;
 
 /// columns for transactions
-#[cryo_to_df::to_df(Datatype::TraceCalls)]
+#[triodion_macros::to_df(Datatype::TraceCalls)]
 #[derive(Default)]
 pub struct TraceCalls {
     n_rows: u64,

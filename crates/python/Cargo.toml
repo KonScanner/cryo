@@ -1,25 +1,27 @@
-# cryo_python is a standalone crate (not a member of the parent cryo
+# triodion-py is a standalone crate (not a member of the parent triodion
 # workspace) because pyo3-polars enables `polars-error/python`, which under
 # Cargo's workspace-level feature unification would enable pyo3's
 # `extension-module` feature for every other crate too and break the
-# standalone `cryo` binary's link. See the top-level Cargo.toml comment for
+# standalone `triodion` binary's link. See the top-level Cargo.toml comment for
 # the full explanation.
 [package]
-name = "cryo_python"
+name = "triodion-py"
 build = "build.rs"
-description = "cryo python is a python library built on top of the rust cryo library"
+description = "triodion-py is a python library built on top of the rust triodion library"
 version = "0.4.4"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/KonScanner/cryo"
-repository = "https://github.com/KonScanner/cryo"
+homepage = "https://github.com/KonScanner/triodion"
+repository = "https://github.com/KonScanner/triodion"
 
 [workspace]
 # Empty workspace block makes this a self-contained workspace so it can be
 # built from its own directory without inheriting the parent.
 
 [lib]
-name = "cryo"
+# cdylib that maturin installs as the Python extension module. Paired with
+# `module-name = "triodion._triodion_rust"` in pyproject.toml.
+name = "triodion"
 path = "rust/lib.rs"
 crate-type = ["cdylib"]
 
@@ -47,10 +49,10 @@ crate-type = ["cdylib"]
 #     across all 3.10–3.14 wheels.
 # We ship a single Docker image with a single Python version. There is no
 # wheel-distribution win to justify the verification cost. Revisit if we
-# ever publish cryo wheels publicly.
+# ever publish triodion wheels publicly.
 [dependencies]
-cryo_cli            = { version = "0.4.0", path = "../cli" }
-cryo_freeze         = { version = "0.4.0", path = "../freeze" }
+triodion-cli        = { version = "0.4.0", path = "../cli" }
+triodion-core       = { version = "0.4.0", path = "../freeze" }
 polars              = { version = "0.53", features = ["parquet", "string_encoding", "lazy", "binary_encoding", "json", "dtype-struct"] }
 pyo3                = { version = "0.27", features = ["extension-module"] }
 pyo3-async-runtimes = { version = "0.27", features = ["tokio-runtime"] }

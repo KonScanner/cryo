@@ -12,7 +12,7 @@
     - [Data Acquisition](./basic_usage/data_acquisition.md)
     - [Data Formatting](./basic_usage/data_formatting.md)
     - [Data Querying](./basic_usage/data_querying.md)
-- [Cryo Python](./cryo_python/overview.md)
+- [Python Bindings](./cryo_python/overview.md)
     - [Installation](./cryo_python/installation.md)
     - [Example Usage](./cryo_python/example_usage.md)
     - [Reference](./cryo_python/reference.md)

@@ -1,6 +1,6 @@
 use crate::types::Datatype;
 
-/// enum of possible sets of datatypes that cryo can collect
+/// enum of possible sets of datatypes that triodion can collect
 /// used when multiple datatypes are collected together
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize)]
 pub enum MultiDatatype {
@@ -17,7 +17,7 @@ pub enum MultiDatatype {
     /// Members include raw `logs`, `erc20_transfers`, `erc20_approvals`,
     /// `erc721_transfers`, and `erc20_wrapper_events` (Deposit/Withdrawal). All
     /// share the `eth_getLogs` RPC primitive; when two or more are co-requested
-    /// cryo issues **one** call per partition with a UNION filter and fans the
+    /// triodion issues **one** call per partition with a UNION filter and fans the
     /// response out to each requested sub-dataset's column accumulator.
     LogEvents,
 

@@ -3,7 +3,7 @@ use alloy::primitives::Address;
 use polars::prelude::*;
 
 /// columns for balances
-#[cryo_to_df::to_df(Datatype::Codes)]
+#[triodion_macros::to_df(Datatype::Codes)]
 #[derive(Default)]
 pub struct Codes {
     n_rows: usize,
