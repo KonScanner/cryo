@@ -34,8 +34,8 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/paradigmxyz/cryo_test"
-Source = "https://github.com/paradigmxyz/cryo_test"
+Documentation = "https://github.com/KonScanner/cryo"
+Source = "https://github.com/KonScanner/cryo"
 
 [tool.flit.module]
 name = "cryo_test"

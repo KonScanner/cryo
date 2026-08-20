@@ -10,14 +10,17 @@ Installing from source allows using the latest unreleased version of cryo.
 #### Option 1: Install from pip
 
 ```
-pip install cryo
+pip install cryo-konscanner
 ```
+
+The distribution name is `cryo-konscanner`, not `cryo` — plain `cryo` on PyPI is the
+upstream package. The import path is unchanged: `import cryo` still works.
 
 #### Option 2: Install from source
 
 ```
 pip install maturin
-git clone https://github.com/paradigmxyz/cryo
+git clone https://github.com/KonScanner/cryo
 cd cryo/crates/python
 maturin build --release
 pip install --force-reinstall <OUTPUT_OF_MATURIN_BUILD>.whl

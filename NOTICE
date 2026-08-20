@@ -1,0 +1,52 @@
+cryo (KonScanner fork)
+======================
+
+This product is a derivative work of cryo, originally developed by Paradigm
+and the Cryo Contributors:
+
+    https://github.com/paradigmxyz/cryo
+    Copyright (c) 2022-2023 Cryo Contributors
+
+The original work is licensed under the MIT license OR the Apache License,
+Version 2.0, at your option. Copies of both are included in this repository as
+LICENSE-MIT and LICENSE-APACHE. They are unmodified from upstream.
+
+Modifications in this fork:
+
+    Copyright (c) 2026 KonScanner
+
+This fork is likewise released under MIT OR Apache-2.0.
+
+This project is not affiliated with, sponsored by, or endorsed by Paradigm.
+The "cryo" name is used to identify the upstream work from which this fork
+derives. No trademark rights are claimed or granted (Apache-2.0 section 6).
+
+
+Statement of changes (Apache-2.0 section 4(b))
+----------------------------------------------
+
+This fork diverges from upstream commit 559b654 (2025-01-08). The files listed
+by `git diff --name-only 559b654...HEAD` have been changed. Substantive
+modifications, newest first:
+
+  * Validate fixed-width CLI byte arguments instead of panicking. Address and
+    topic values from --address / --topic0..3 are length-checked before
+    conversion to alloy fixed-width types.
+  * Add the Erc20WrapperEvents dataset, covering the WETH-shape Deposit and
+    Withdrawal events.
+  * Add a coalesced LogEvents multi-dataset extractor that unions log filters
+    into a single eth_getLogs request.
+  * Add Multicall3 batching for eth_calls, and extend it to ERC-20 / ERC-721
+    metadata, balances, and total supplies.
+  * Batch JSON-RPC fan-out for transaction receipts, transactions, blocks, and
+    traces into single request envelopes.
+  * Wire a request rate limiter and a concurrency semaphore into Source, and
+    add the --l1-rpc argument.
+  * Add per-dataset default_inner_request_size for log-shaped datasets.
+  * Upgrade alloy from 0.6.4 to 2.0.5, and pyo3 for Python 3.13+ support.
+  * Bump dependencies, including thiserror 1 to 2, indicatif, and heck.
+  * Pin the Rust toolchain, and publish the Python wheel under the
+    fork-specific distribution name "cryo-konscanner" rather than "cryo".
+
+For the authoritative and complete record of changes, consult the commit
+history of this repository.

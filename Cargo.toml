@@ -19,8 +19,8 @@ resolver = "3"
 version = "0.4.4"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/paradigmxyz/cryo"
-repository = "https://github.com/paradigmxyz/cryo"
+homepage = "https://github.com/KonScanner/cryo"
+repository = "https://github.com/KonScanner/cryo"
 exclude = [".github/"]
 
 [workspace.dependencies]

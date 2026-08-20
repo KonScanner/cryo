@@ -1,6 +1,11 @@
 # ❄️🧊 cryo 🧊❄️
 
-[![Rust](https://github.com/paradigmxyz/cryo/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/paradigmxyz/cryo/actions/workflows/build_and_test.yml) [![Telegram Chat](https://img.shields.io/badge/Telegram-join_chat-blue.svg)](https://t.me/paradigm_data)
+[![Rust](https://github.com/KonScanner/cryo/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/KonScanner/cryo/actions/workflows/build_and_test.yml)
+
+> **Fork notice.** This is a modified fork of [paradigmxyz/cryo](https://github.com/paradigmxyz/cryo), maintained by KonScanner.
+> It is not affiliated with, nor endorsed by, Paradigm. It diverges from upstream
+> commit `559b654` (2025-01-08). See [NOTICE](NOTICE) for the statement of changes
+> required by Apache-2.0 section 4(b). Licensed MIT OR Apache-2.0, as upstream.
 
 `cryo` is the easiest way to extract blockchain data to parquet, csv, json, or a python dataframe.
 
@@ -47,7 +52,7 @@ The simplest way to use `cryo` is as a cli tool:
 #### Method 1: install from source
 
 ```bash
-git clone https://github.com/paradigmxyz/cryo
+git clone https://github.com/KonScanner/cryo
 cd cryo
 cargo install --path ./crates/cli
 ```
@@ -74,14 +79,17 @@ Make sure that `~/.cargo/bin` is on your `PATH`. One way to do this is by adding
 
 ```bash
 pip install maturin
-pip install cryo
+pip install cryo-konscanner
 ```
+
+The distribution name is `cryo-konscanner`, not `cryo` — plain `cryo` on PyPI is the
+upstream package. The import path is unchanged: `import cryo` still works.
 
 #### Installing `cryo` python from source
 
 ```bash
 pip install maturin
-git clone https://github.com/paradigmxyz/cryo
+git clone https://github.com/KonScanner/cryo
 cd cryo/crates/python
 maturin build --release
 pip install --force-reinstall <OUTPUT_OF_MATURIN_BUILD>.whl
