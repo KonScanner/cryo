@@ -301,13 +301,14 @@ pub struct Args {
     )]
     pub _multicall_legacy_alias: bool,
 
-    /// Max inner calls per Multicall3 batch (only used with --multicall)
-    #[arg(
-        long,
-        value_name = "N",
-        default_value_t = 150,
-        help_heading = "Dataset-specific Options"
-    )]
+    /// Cap on inner eth_calls per Multicall3 batch (0 = the dataset's own default).
+    ///
+    /// This caps INNER CALLS, not rows: rows per batch is this value divided by
+    /// the dataset's calls-per-row (`erc20_metadata` issues 3, so N=250 ships ~83
+    /// rows per multicall). Leave at 0 to get `DEFAULT_MULTICALL_BATCH_SIZE` — or
+    /// whatever a dataset overrides it to for expensive inner calls. A non-zero
+    /// value overrides every dataset's preference.
+    #[arg(long, value_name = "N", default_value_t = 0, help_heading = "Dataset-specific Options")]
     pub multicall_batch_size: u32,
 
     /// Mark the whole batch as failed if any inner call reverts (default: per-call failures return

@@ -68,7 +68,7 @@ use cryo_cli::{run, Args};
         no_verbose = false,
         event_signature = None,
         multicall = false,
-        multicall_batch_size = 150,
+        multicall_batch_size = 0,
         multicall_require_success = false,
     )
 )]

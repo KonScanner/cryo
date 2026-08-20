@@ -18,7 +18,7 @@ pub mod partitions;
 pub mod rpc_params;
 
 pub use partitions::{Dim, Partition, PartitionLabels};
-pub use rpc_params::Params;
+pub use rpc_params::{address_dim_as_topic, Params};
 
 /// collection traits
 pub mod collection;

@@ -1,6 +1,6 @@
-use crate::{types::rpc_params::fixed_from_slice, *};
+use crate::*;
 use alloy::{
-    primitives::{B256, U256},
+    primitives::U256,
     rpc::types::{Filter, Log, Topic},
     sol_types::SolEvent,
 };
@@ -66,10 +66,18 @@ impl CollectByBlock for Erc20Transfers {
         let mut topics: [Topic; 4] = Default::default();
         topics[0] = ERC20::Transfer::SIGNATURE_HASH.into();
         if let Some(from_address) = &request.from_address {
-            topics[1] = fixed_from_slice::<B256>(from_address, "from_address")?.into();
+            // `--from-address` is documented as a 20-byte address; left-pad it into
+            // the 32-byte topic slot rather than panicking in `B256::from_slice`.
+            let v = address_dim_as_topic(from_address).ok_or_else(|| {
+                CollectError::CollectError("from_address must be at most 32 bytes".to_string())
+            })?;
+            topics[1] = v.into();
         }
         if let Some(to_address) = &request.to_address {
-            topics[2] = fixed_from_slice::<B256>(to_address, "to_address")?.into();
+            let v = address_dim_as_topic(to_address).ok_or_else(|| {
+                CollectError::CollectError("to_address must be at most 32 bytes".to_string())
+            })?;
+            topics[2] = v.into();
         }
         let filter = Filter { topics, ..request.ethers_log_filter()? };
         let logs = source.get_logs(&filter).await?;
@@ -102,7 +110,8 @@ impl CollectByTransaction for Erc20Transfers {
 
 /// True iff `log` has the ERC-20 `Transfer` shape: Transfer signature, 3 topics
 /// (sig + indexed from + indexed to), and a 32-byte value. Shared with the
-/// coalesced [`crate::LogEvents`] extractor's by-transaction fan-out.
+/// coalesced [`crate::LogEvents`] extractor — both `fan_out_block` and
+/// `fan_out_transaction`.
 pub(crate) fn is_erc20_transfer(log: &Log) -> bool {
     log.topics().len() == 3 &&
         log.data().data.len() == 32 &&

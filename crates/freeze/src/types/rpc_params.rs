@@ -4,6 +4,20 @@ use alloy::{
     rpc::types::{Filter, FilterBlockOption},
 };
 
+/// Left-pad an address-shaped partition dim (`from_address` / `to_address`) into
+/// the 32-byte log topic the RPC filter expects. Returns `None` when the value is
+/// too wide to be a topic.
+///
+/// The CLI stores these dims at whatever width the user typed
+/// (`hex_strings_to_binary` does not validate length), and `--from-address` is
+/// documented to take a 20-byte address. Both the scalar log extractors and the
+/// coalesced [`crate::LogEvents`] fan-out route through this helper so the two
+/// paths accept exactly the same inputs — padding only one of them would make the
+/// coalesced path return rows where the scalar path errors.
+pub fn address_dim_as_topic(bytes: &[u8]) -> Option<B256> {
+    (bytes.len() <= 32).then(|| B256::left_padding_from(bytes))
+}
+
 /// represents parameters for a single rpc call
 #[derive(Default, Clone, Debug)]
 pub struct Params {

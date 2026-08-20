@@ -131,7 +131,7 @@ fn is_wrapper_event_shape(log: &Log) -> bool {
 /// match. The per-transaction path needs the topic0 check because (unlike the
 /// by-block path) `eth_getLogs` didn't pre-filter the signature — we got *all*
 /// tx logs and must pick out the wrapper ones. Shared with the coalesced
-/// [`crate::LogEvents`] extractor's by-transaction fan-out.
+/// [`crate::LogEvents`] extractor — both `fan_out_block` and `fan_out_transaction`.
 pub(crate) fn is_wrapper_event(log: &Log) -> bool {
     is_wrapper_event_shape(log) &&
         log.topics().first().is_some_and(|t| {
@@ -254,5 +254,58 @@ mod tests {
 
         assert_eq!(columns.n_rows, 2);
         assert_eq!(columns.event_type, vec!["deposit".to_string(), "withdrawal".to_string()]);
+    }
+
+    #[test]
+    fn shape_predicate_requires_two_topics_and_32_byte_data() {
+        let dep = ERC20Wrapper::Deposit::SIGNATURE_HASH;
+        assert!(is_wrapper_event_shape(&log_with(vec![dep, B256::ZERO], 32)));
+        assert!(!is_wrapper_event_shape(&log_with(vec![dep], 32)));
+        assert!(!is_wrapper_event_shape(&log_with(vec![dep, B256::ZERO, B256::ZERO], 32)));
+        assert!(!is_wrapper_event_shape(&log_with(vec![dep, B256::ZERO], 31)));
+        assert!(!is_wrapper_event_shape(&log_with(vec![dep, B256::ZERO], 33)));
+        assert!(!is_wrapper_event_shape(&log_with(vec![], 32)));
+    }
+
+    #[test]
+    fn signature_predicate_rejects_foreign_topic0() {
+        let dep = ERC20Wrapper::Deposit::SIGNATURE_HASH;
+        let wit = ERC20Wrapper::Withdrawal::SIGNATURE_HASH;
+        assert_ne!(dep, wit, "Deposit and Withdrawal must hash differently");
+        assert!(is_wrapper_event(&log_with(vec![dep, B256::ZERO], 32)));
+        assert!(is_wrapper_event(&log_with(vec![wit, B256::ZERO], 32)));
+        assert!(!is_wrapper_event(&log_with(vec![B256::repeat_byte(9), B256::ZERO], 32)));
+    }
+
+    #[test]
+    fn decodes_the_indexed_account_from_topic1() {
+        // topics[1] is the 32-byte-padded address; the column keeps the low 20.
+        let account = B256::left_padding_from(&[0xab; 20]);
+        let log = log_with(vec![ERC20Wrapper::Deposit::SIGNATURE_HASH, account], 32);
+        let mut columns = Erc20WrapperEvents::default();
+        process_wrapper_events(vec![log], &mut columns, &schema()).unwrap();
+        assert_eq!(columns.n_rows, 1);
+        assert_eq!(columns.account, vec![vec![0xabu8; 20]]);
+    }
+
+    #[test]
+    fn skips_a_log_with_a_foreign_topic0() {
+        let logs = vec![
+            log_with(vec![B256::repeat_byte(0xfe), B256::ZERO], 32),
+            log_with(vec![ERC20Wrapper::Deposit::SIGNATURE_HASH, B256::ZERO], 32),
+        ];
+        let mut columns = Erc20WrapperEvents::default();
+        process_wrapper_events(logs, &mut columns, &schema()).unwrap();
+        assert_eq!(columns.n_rows, 1);
+        assert_eq!(columns.event_type, vec!["deposit".to_string()]);
+    }
+
+    #[test]
+    fn skips_logs_missing_identity_fields() {
+        let mut log = log_with(vec![ERC20Wrapper::Deposit::SIGNATURE_HASH, B256::ZERO], 32);
+        log.log_index = None;
+        let mut columns = Erc20WrapperEvents::default();
+        process_wrapper_events(vec![log], &mut columns, &schema()).unwrap();
+        assert_eq!(columns.n_rows, 0);
     }
 }

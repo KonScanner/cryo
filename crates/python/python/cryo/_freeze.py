@@ -22,8 +22,12 @@ async def async_freeze(
 
     if isinstance(datatype, str):
         datatypes = [datatype]
-    elif isinstance(datatype, list):
-        datatypes = datatype
+    elif isinstance(datatype, typing.Sequence):
+        # The annotation says Sequence[str], but the check was `list`, so a tuple
+        # -- the natural shape for a fixed dataset list -- raised. Passing several
+        # log-shaped datatypes in one call is what triggers the coalesced
+        # MultiDatatype::LogEvents path, so this must accept any sequence.
+        datatypes = list(datatype)
     else:
         raise Exception('invalid format for datatype(s)')
 

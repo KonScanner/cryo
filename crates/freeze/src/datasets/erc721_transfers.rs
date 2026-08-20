@@ -1,6 +1,6 @@
 use crate::*;
 use alloy::{
-    primitives::{B256, U256},
+    primitives::U256,
     rpc::types::{Filter, Log, Topic},
     sol_types::SolEvent,
 };
@@ -66,11 +66,17 @@ impl CollectByBlock for Erc721Transfers {
         let mut topics: [Topic; 4] = Default::default();
         topics[0] = ERC721::Transfer::SIGNATURE_HASH.into();
         if let Some(from_address) = &request.from_address {
-            let v = B256::from_slice(from_address);
+            // `--from-address` is documented as a 20-byte address; left-pad it into
+            // the 32-byte topic slot rather than panicking in `B256::from_slice`.
+            let v = address_dim_as_topic(from_address).ok_or_else(|| {
+                CollectError::CollectError("from_address must be at most 32 bytes".to_string())
+            })?;
             topics[1] = v.into();
         };
         if let Some(to_address) = &request.to_address {
-            let v = B256::from_slice(to_address);
+            let v = address_dim_as_topic(to_address).ok_or_else(|| {
+                CollectError::CollectError("to_address must be at most 32 bytes".to_string())
+            })?;
             topics[2] = v.into();
         };
         let filter = Filter { topics, ..request.ethers_log_filter()? };
@@ -102,7 +108,8 @@ impl CollectByTransaction for Erc721Transfers {
 /// True iff `log` has the ERC-721 `Transfer` shape: Transfer signature, 4 topics
 /// (sig + indexed from + indexed to + indexed tokenId), and empty data. Shares
 /// the ERC-20 Transfer signature hash — the topic count is what distinguishes
-/// them. Shared with the coalesced [`crate::LogEvents`] extractor's by-tx fan-out.
+/// them. Shared with the coalesced [`crate::LogEvents`] extractor — both
+/// `fan_out_block` and `fan_out_transaction`.
 pub(crate) fn is_erc721_transfer(log: &Log) -> bool {
     log.topics().len() == 4 &&
         log.data().data.is_empty() &&

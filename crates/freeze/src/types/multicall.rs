@@ -41,7 +41,7 @@ pub const MULTICALL3_ADDRESS: Address = address!("cA11bde05977b3631167028862bE2a
 /// Default batch size when the caller doesn't specify one.
 ///
 /// **Best-effort cap on inner eth_calls per Multicall3 transaction** (see
-/// [`rows_per_batch`] — row count is divided by `calls_per_row`, so this caps
+/// `rows_per_batch` — row count is divided by `calls_per_row`, so this caps
 /// inner calls rather than rows). The cap is best-effort: a single row is never
 /// split, so a dataset whose `calls_per_row` exceeds `batch_size` still ships
 /// one whole row per multicall (i.e. `calls_per_row` inner calls). No dataset
@@ -53,7 +53,7 @@ pub const MULTICALL3_ADDRESS: Address = address!("cA11bde05977b3631167028862bE2a
 /// Bumped from upstream's 150 to 250 (modest +66% to reduce multicall count
 /// without triggering server-side timeouts at scale). Empirically 1000-batch
 /// regressed against real RPCs at 1.9M-call workloads — the halving fallback
-/// in [`multicall_batch_with_fallback`] kicked in and dragged wall-clock past
+/// in `multicall_batch_with_fallback` kicked in and dragged wall-clock past
 /// the smaller-batch baseline. Datasets with expensive inner calls
 /// (on-chain SVG `tokenURI`, multi-statement state queries) override via
 /// [`MulticallBatchable::default_multicall_batch_size`].
