@@ -57,7 +57,7 @@ use crate::{
         erc20_approvals::is_erc20_approval, erc20_transfers::is_erc20_transfer,
         erc20_wrapper_events::is_wrapper_event, erc721_transfers::is_erc721_transfer,
     },
-    types::collection::*,
+    types::{collection::*, rpc_params::fixed_from_slice},
     *,
 };
 use alloy::{
@@ -149,7 +149,7 @@ fn build_union_filter(request: &Params, active: &HashSet<Datatype>) -> R<Filter>
     // Otherwise build the topic0 union from the active set.
     let mut topic0s: Vec<B256> = Vec::new();
     if let Some(user_topic0) = &request.topic0 {
-        topic0s.push(B256::from_slice(user_topic0));
+        topic0s.push(fixed_from_slice::<B256>(user_topic0, "topic0")?);
     }
     // ERC20 Transfer and ERC721 Transfer share the same SIGNATURE_HASH —
     // include once if either is active.
@@ -449,6 +449,28 @@ mod tests {
     }
 
     #[test]
+    fn malformed_user_topic0_errors_instead_of_panicking() {
+        // Regression: `--topic0` is hex-decoded by the CLI with no length
+        // check, so a short value reaches here as raw bytes. It must surface
+        // as a typed error, not a `FixedBytes::from_slice` panic that aborts
+        // the crawl mid-flight.
+        let params = Params {
+            block_range: Some((0, 10)),
+            topic0: Some(vec![0xde, 0xad, 0xbe, 0xef]), // 4 bytes, not 32
+            ..Default::default()
+        };
+        let err = build_union_filter(
+            &params,
+            &active(&[Datatype::Logs, Datatype::Erc20Transfers]),
+        )
+        .unwrap_err();
+        assert!(
+            err.to_string().contains("topic0 must be 32 bytes, got 4"),
+            "expected a width error, got: {err}"
+        );
+    }
+
+    #[test]
     fn union_filter_unconstrained_when_logs_without_topic0() {
         // Raw `logs` with no --topic0 wants every topic0 ⇒ the union cannot
         // narrow topic0; topic1 is still stripped so siblings aren't narrowed.
@@ -467,3 +489,4 @@ mod tests {
         );
     }
 }
+

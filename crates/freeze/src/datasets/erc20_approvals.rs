@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{types::rpc_params::fixed_from_slice, *};
 use alloy::{
     primitives::{B256, U256},
     rpc::types::{Filter, Log, Topic},
@@ -66,12 +66,10 @@ impl CollectByBlock for Erc20Approvals {
         let mut topics: [Topic; 4] = Default::default();
         topics[0] = ERC20::Approval::SIGNATURE_HASH.into();
         if let Some(from_address) = &request.from_address {
-            let v = B256::from_slice(from_address);
-            topics[1] = v.into();
+            topics[1] = fixed_from_slice::<B256>(from_address, "from_address")?.into();
         }
         if let Some(to_address) = &request.to_address {
-            let v = B256::from_slice(to_address);
-            topics[2] = v.into();
+            topics[2] = fixed_from_slice::<B256>(to_address, "to_address")?.into();
         }
         let filter = Filter { topics, ..request.ethers_log_filter()? };
 

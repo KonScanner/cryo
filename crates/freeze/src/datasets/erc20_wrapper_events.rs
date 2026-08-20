@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{types::rpc_params::fixed_from_slice, *};
 use alloy::{
     primitives::{B256, U256},
     rpc::types::{Filter, Log, Topic},
@@ -91,7 +91,7 @@ impl CollectByBlock for Erc20WrapperEvents {
             vec![ERC20Wrapper::Deposit::SIGNATURE_HASH, ERC20Wrapper::Withdrawal::SIGNATURE_HASH]
                 .into();
         if let Some(account) = &request.topic1 {
-            topics[1] = B256::from_slice(account).into();
+            topics[1] = fixed_from_slice::<B256>(account, "topic1")?.into();
         }
         let filter = Filter { topics, ..request.ethers_log_filter()? };
         let logs = source.get_logs(&filter).await?;
@@ -147,17 +147,22 @@ fn process_wrapper_events(
     schema: &Table,
 ) -> R<()> {
     for log in logs.iter() {
-        let topic0 = log.topics().first().copied().unwrap_or_default();
-        let event_type = if topic0 == ERC20Wrapper::Deposit::SIGNATURE_HASH {
-            "deposit"
-        } else if topic0 == ERC20Wrapper::Withdrawal::SIGNATURE_HASH {
-            "withdrawal"
-        } else {
-            // Defensive — extract()'s union filter + shape check should already
-            // have rejected this, but if a future caller reaches process_*
-            // directly with mixed logs (e.g., via the coalesced LogEvents
-            // multi-dataset), skip rather than mis-tag.
+        // Shape guard first. The `account` column below reads `topics()[1]`, so
+        // a log carrying a wrapper topic0 but fewer than 2 topics would panic.
+        // A topic0-only check (the previous guard) does not cover that.
+        // `is_wrapper_event` checks topic count, data width and topic0 together
+        // — exactly this loop's precondition. Every current caller pre-filters;
+        // this keeps a future caller that reaches process_* with mixed logs
+        // (e.g. via the coalesced LogEvents multi-dataset) safe, skipping
+        // rather than mis-tagging or aborting.
+        if !is_wrapper_event(log) {
             continue;
+        }
+        let event_type = if log.topics()[0] == ERC20Wrapper::Deposit::SIGNATURE_HASH {
+            "deposit"
+        } else {
+            // is_wrapper_event admits only Deposit or Withdrawal at topic0.
+            "withdrawal"
         };
 
         if let (Some(bn), Some(tx), Some(ti), Some(li)) =
@@ -171,10 +176,83 @@ fn process_wrapper_events(
             store!(schema, columns, transaction_hash, tx.to_vec());
             store!(schema, columns, erc20, log.address().to_vec());
             store!(schema, columns, event_type, event_type.to_string());
-            // topics[1] is the indexed `address` (padded to 32 bytes — low 20 are the address).
+            // topics[1] is the indexed `address` (padded to 32 bytes — low 20 are
+            // the address). The `is_wrapper_event` guard above proves len == 2.
             store!(schema, columns, account, log.topics()[1][12..].to_vec());
             store!(schema, columns, value, U256::from_be_slice(&log.data().data));
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use alloy::primitives::{Address, Bytes};
+
+    /// real `Erc20WrapperEvents` schema, so `store!` actually evaluates each column
+    fn schema() -> Table {
+        Datatype::Erc20WrapperEvents
+            .table_schema(
+                &[U256Type::String],
+                &ColumnEncoding::Hex,
+                &None,
+                &None,
+                &None,
+                None,
+                None,
+            )
+            .expect("Erc20WrapperEvents has a valid default schema")
+    }
+
+    /// rpc `Log` carrying the block/tx/index fields `process_wrapper_events` requires
+    fn log_with(topics: Vec<B256>, data_len: usize) -> Log {
+        let inner = alloy::primitives::Log::new_unchecked(
+            Address::ZERO,
+            topics,
+            Bytes::from(vec![0u8; data_len]),
+        );
+        Log {
+            inner,
+            block_number: Some(1),
+            transaction_hash: Some(B256::ZERO),
+            transaction_index: Some(0),
+            log_index: Some(0),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn wrapper_topic0_with_missing_topic1_is_skipped_not_panicking() {
+        // Regression: the `account` column reads topics()[1]. A log with a
+        // wrapper topic0 but only one topic passed the old topic0-only guard
+        // and then panicked on the index. It must be skipped instead.
+        let malformed = log_with(vec![ERC20Wrapper::Deposit::SIGNATURE_HASH], 32);
+        assert!(!is_wrapper_event(&malformed));
+
+        let mut columns = Erc20WrapperEvents::default();
+        process_wrapper_events(vec![malformed], &mut columns, &schema()).unwrap();
+        assert_eq!(columns.n_rows, 0, "malformed log must not produce a row");
+    }
+
+    #[test]
+    fn wrapper_topic0_with_wrong_data_width_is_skipped() {
+        // Deposit sig + 2 topics but 8-byte data ⇒ not a wrapper event.
+        let malformed = log_with(vec![ERC20Wrapper::Deposit::SIGNATURE_HASH, B256::ZERO], 8);
+        let mut columns = Erc20WrapperEvents::default();
+        process_wrapper_events(vec![malformed], &mut columns, &schema()).unwrap();
+        assert_eq!(columns.n_rows, 0);
+    }
+
+    #[test]
+    fn well_formed_deposit_and_withdrawal_are_tagged() {
+        let deposit = log_with(vec![ERC20Wrapper::Deposit::SIGNATURE_HASH, B256::ZERO], 32);
+        let withdrawal = log_with(vec![ERC20Wrapper::Withdrawal::SIGNATURE_HASH, B256::ZERO], 32);
+
+        let mut columns = Erc20WrapperEvents::default();
+        process_wrapper_events(vec![deposit, withdrawal], &mut columns, &schema()).unwrap();
+
+        assert_eq!(columns.n_rows, 2);
+        assert_eq!(columns.event_type, vec!["deposit".to_string(), "withdrawal".to_string()]);
+    }
 }
